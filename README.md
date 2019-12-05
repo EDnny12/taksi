@@ -4,13 +4,12 @@ Aplicación movil para taxistas
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+Este proyecto es para la colaboracion en el desarrollo de Tak-Si
 
-A few resources to get you started if this is your first Flutter project:
+Para obtener ayuda si es tu primer proyecto de Flutter:
 
 - [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
 - [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- Las configuraciones para firebase estan realizadas
+
