@@ -1,6 +1,6 @@
 # taksi
 
-Aplicación movil para taxistas
+Aplicación movil para taxistas (Usuarios)
 
 ## Getting Started
 
