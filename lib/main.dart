@@ -15,6 +15,9 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context)=>Usuario()),
       ],
       child: MaterialApp(
+        darkTheme: ThemeData(
+          brightness: Brightness.dark
+        ),
         title: 'TAK-SI',
         theme: ThemeData(
           primarySwatch: Colors.blue,
