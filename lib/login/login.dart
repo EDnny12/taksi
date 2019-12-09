@@ -1,7 +1,18 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_auth_buttons/flutter_auth_buttons.dart';
+<<<<<<< HEAD
 import 'package:taksi/providers/metodos.dart';
+=======
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
+import 'package:taksi/providers/usuario.dart';
+import 'package:taksi/screen/main_screen.dart';
+
+final GoogleSignIn _googleSignIn = GoogleSignIn();
+final FirebaseAuth _auth = FirebaseAuth.instance;
+>>>>>>> 30d8f271757d03b3ff4be800c1d8ea611e07ce2b
 class Log extends StatefulWidget {
   @override
   _LogState createState() => _LogState();
@@ -9,6 +20,7 @@ class Log extends StatefulWidget {
 
 class _LogState extends State<Log> {
 
+<<<<<<< HEAD
   // Controladores para campos de texto de Login
   TextEditingController login = TextEditingController();
   TextEditingController contrasena = TextEditingController();
@@ -118,6 +130,31 @@ class _LogState extends State<Log> {
     controlador.dispose();
     super.dispose();
   }
+=======
+
+  Future<FirebaseUser> _handleSignIn() async {
+    final GoogleSignInAccount googleUser = await _googleSignIn.signIn();
+    final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+    final AuthCredential credential = GoogleAuthProvider.getCredential(
+      accessToken: googleAuth.accessToken,
+      idToken: googleAuth.idToken,
+    );
+
+    final FirebaseUser user = (await _auth.signInWithCredential(credential)).user;
+    if(user.email!=null){
+      Provider.of<Usuario>(context).correo=user.email;
+      Provider.of<Usuario>(context).nombre=user.displayName;
+      Provider.of<Usuario>(context).foto= user.photoUrl;
+      Navigator.push(context, CupertinoPageRoute(builder: (context)=>Menu()));
+    }
+
+
+    return user;
+  }
+
+
+>>>>>>> 30d8f271757d03b3ff4be800c1d8ea611e07ce2b
 
   SingleChildScrollView loginUI(){
     return    SingleChildScrollView(
@@ -128,11 +165,16 @@ class _LogState extends State<Log> {
         child: Card(
 
           child: Padding(
+<<<<<<< HEAD
             padding: EdgeInsets.only(left: 13.0,right: 13.0),
+=======
+            padding:   EdgeInsets.all(MediaQuery.of(context).size.width*0.1),
+>>>>>>> 30d8f271757d03b3ff4be800c1d8ea611e07ce2b
             child: Column(
 
               children: <Widget>[
                 const SizedBox(height: 15.0),
+<<<<<<< HEAD
                 Image.asset("assets/logo.png",scale: 2.5),
 
                 campos("Usuario", login,false,0),
@@ -171,6 +213,20 @@ class _LogState extends State<Log> {
                 Row(
 
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
+=======
+                Image.asset("assets/logo.png",scale: 1.0),
+
+               const SizedBox(
+                 height: 1.0,
+               ),
+                ListTile(
+                    title: const Text("¡Organiza tu viaje!",textAlign: TextAlign.center,style: const TextStyle(fontWeight: FontWeight.bold),)),
+               const SizedBox(
+                 height: 10.0,
+               ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+>>>>>>> 30d8f271757d03b3ff4be800c1d8ea611e07ce2b
                   children: <Widget>[
                     FacebookSignInButton(onPressed: () {
                       // call authentication logic
@@ -182,11 +238,18 @@ class _LogState extends State<Log> {
                     const SizedBox(height: 10.0,),
                     GoogleSignInButton(
                       text: "Google",
+<<<<<<< HEAD
                       onPressed: () {/* ... */},
+=======
+                      onPressed: () {
+                        _handleSignIn();
+                      },
+>>>>>>> 30d8f271757d03b3ff4be800c1d8ea611e07ce2b
                       borderRadius: 12.0,
                     ),
                   ],
                 )
+<<<<<<< HEAD
                 ,
                 const SizedBox(height: 40.0,),
                 Row(
@@ -204,6 +267,10 @@ class _LogState extends State<Log> {
                   ],
                 ),
                 const SizedBox(height: 5.0,),
+=======
+
+
+>>>>>>> 30d8f271757d03b3ff4be800c1d8ea611e07ce2b
 
 
               ],
@@ -217,6 +284,7 @@ class _LogState extends State<Log> {
       ),
     );
   }
+<<<<<<< HEAD
   SingleChildScrollView registroUI(){
     return
 
@@ -319,6 +387,8 @@ class _LogState extends State<Log> {
   }
 
 
+=======
+>>>>>>> 30d8f271757d03b3ff4be800c1d8ea611e07ce2b
 
 
 
@@ -330,6 +400,7 @@ class _LogState extends State<Log> {
         child: Stack(
           children: <Widget>[
             fondo(),
+<<<<<<< HEAD
             PageView(
               controller: controlador,
               physics: NeverScrollableScrollPhysics(),
@@ -339,6 +410,9 @@ class _LogState extends State<Log> {
                 registroUI(),
               ],
             ),
+=======
+            Center(child: loginUI()),
+>>>>>>> 30d8f271757d03b3ff4be800c1d8ea611e07ce2b
 
 
           ],
@@ -350,6 +424,25 @@ class _LogState extends State<Log> {
   }
 }
 
+<<<<<<< HEAD
+=======
+class gradiente extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+
+            begin: Alignment.topRight,
+            end: Alignment.bottomLeft,
+            colors: [Colors.blue, Colors.red]
+        )
+      ),
+    );
+  }
+}
+
+>>>>>>> 30d8f271757d03b3ff4be800c1d8ea611e07ce2b
 class fondo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
