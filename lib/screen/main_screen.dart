@@ -17,6 +17,11 @@ class _MenuState extends State<Menu> {
         title: Text("Tak-si",style: TextStyle(color: Theme.of(context).brightness==Brightness.dark? Colors.white:Colors.black),),
         iconTheme: IconThemeData(color: Theme.of(context).brightness==Brightness.dark? Colors.white:Colors.black)),
 
+
+
+      body: Container(
+
+      ),
       drawer: Drawer(
         child: ListView(
           children: <Widget>[
