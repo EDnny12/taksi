@@ -2,10 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:taksi/providers/dynamic_theme.dart';
 import 'package:taksi/providers/usuario.dart';
+import 'package:taksi/state/app_state.dart';
 import 'login/login.dart';
 
 
-void main() => runApp(MyApp());
+//void main() => runApp(MyApp());
+void main(){
+  return runApp(MultiProvider(
+    providers: [
+      ChangeNotifierProvider.value(value: AppState())
+    ],
+    child: MyApp(),
+  ));
+}
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.

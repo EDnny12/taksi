@@ -1,33 +1,39 @@
-
 import 'package:flutter/cupertino.dart';
 
-class Usuario with ChangeNotifier{
+class Usuario with ChangeNotifier {
+  String _correo = null;
+  String _nombre = null;
+  String _foto = null;
+  bool darkMode = false;
 
-  String _correo=null;
-  String _nombre=null;
-  String _foto=null;
+  set dark(final modo) {
+    this.darkMode = modo;
+  }
 
-  get correo{
+  get correo {
     return this._correo;
   }
-  set correo(final correo){
-    this._correo=correo;
+
+  set correo(final correo) {
+    this._correo = correo;
     notifyListeners();
   }
-  get nombre{
+
+  get nombre {
     return this._nombre;
   }
-  set nombre(final nom){
-    this._nombre=nom;
+
+  set nombre(final nom) {
+    this._nombre = nom;
     notifyListeners();
   }
-  get foto{
+
+  get foto {
     return this._foto;
   }
-  set foto(final fo){
-    this._foto=fo;
+
+  set foto(final fo) {
+    this._foto = fo;
     notifyListeners();
   }
-
-
 }

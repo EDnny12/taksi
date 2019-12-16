@@ -64,25 +64,28 @@ class _LogState extends State<Log> {
                const SizedBox(
                  height: 10.0,
                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    FacebookSignInButton(onPressed: () {
-                      // call authentication logic
-                    },
-                      borderRadius: 12.0,
-                      text: "Facebook",
-                    ),
-
-                    const SizedBox(height: 10.0,),
-                    GoogleSignInButton(
-                      text: "Google",
-                      onPressed: () {
-                        _handleSignIn();
+                FittedBox(
+                  fit: BoxFit.contain,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      FacebookSignInButton(onPressed: () {
+                        // call authentication logic
                       },
-                      borderRadius: 12.0,
-                    ),
-                  ],
+                        borderRadius: 12.0,
+                        text: "Facebook",
+                      ),
+
+                      const SizedBox(width: 5.0,),
+                      GoogleSignInButton(
+                        text: "Google",
+                        onPressed: () {
+                          _handleSignIn();
+                        },
+                        borderRadius: 12.0,
+                      ),
+                    ],
+                  ),
                 )
 
 
