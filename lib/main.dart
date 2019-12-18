@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:taksi/providers/dynamic_theme.dart';
 import 'package:taksi/providers/usuario.dart';
+import 'package:taksi/screen/main_screen.dart';
 import 'login/login.dart';
 
 
@@ -11,6 +12,7 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context)=>Usuario()),
@@ -20,6 +22,7 @@ class MyApp extends StatelessWidget {
           defaultBrightness: Brightness.light,
           data: (brightness) => ThemeData(
 
+
             brightness: brightness,
 
           ),
@@ -27,11 +30,12 @@ class MyApp extends StatelessWidget {
           return MaterialApp(
 
             darkTheme: ThemeData(
-                brightness: Brightness.dark
+                brightness: Brightness.dark,
+                   
             ),
             title: 'TAK-SI',
             theme: theme,
-            home: Log(),
+            home: Provider.of<Usuario>(context).nombre!=null? Menu():Log(),
           );
         }
       ),

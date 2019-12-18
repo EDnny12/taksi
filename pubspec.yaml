@@ -26,13 +26,15 @@ dependencies:
   provider: ^3.2.0
   flutter_auth_buttons: ^0.6.0
   font_awesome_flutter: ^8.5.0
-  image_picker: ^0.6.2+1
-  firebase_auth: ^0.15.1
-  google_sign_in: ^4.0.14
-  cloud_firestore: ^0.12.11
-  firebase_storage: ^3.0.8
-  shared_preferences: ^0.5.4+8
+  image_picker: ^0.6.2+3
+  firebase_auth: ^0.15.2
+  google_sign_in: ^4.1.0
+  cloud_firestore: ^0.13.0+1
+  firebase_storage: ^3.1.0
+  shared_preferences: ^0.5.6
   cached_network_image: ^1.1.3
+  flutter_facebook_login: ^3.0.0
+  http: ^0.12.0+2
 
 dev_dependencies:
   flutter_test:
@@ -52,6 +54,7 @@ flutter:
 
   assets:
     - assets/logo.png
+    - assets/taxo.png
 
   fonts:
     - family: Bebas

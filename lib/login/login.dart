@@ -5,8 +5,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:taksi/providers/usuario.dart';
-import 'package:taksi/screen/main_screen.dart';
-
+import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 final GoogleSignIn _googleSignIn = GoogleSignIn();
 final FirebaseAuth _auth = FirebaseAuth.instance;
 class Log extends StatefulWidget {
@@ -16,7 +15,35 @@ class Log extends StatefulWidget {
 
 class _LogState extends State<Log> {
 
+   void facebookLogin()async{
+     final facebookLogin = FacebookLogin();
+     final result = await facebookLogin.logIn(['email']);
 
+     switch (result.status) {
+       case FacebookLoginStatus.loggedIn:
+         onLoginFb(result.accessToken.token);
+         break;
+       case FacebookLoginStatus.cancelledByUser:
+        print("cancelo");
+         break;
+       case FacebookLoginStatus.error:
+        print("error");
+         break;
+     }
+   }
+   void onLoginFb(final token)async{
+     final AuthCredential credential = FacebookAuthProvider.getCredential(
+       accessToken: token,
+
+     );
+     final FirebaseUser =(await _auth.signInWithCredential(credential)).user;
+
+     Provider.of<Usuario>(context).correo=FirebaseUser.email;
+     Provider.of<Usuario>(context).nombre=FirebaseUser.displayName;
+     Provider.of<Usuario>(context).foto= FirebaseUser.photoUrl;
+
+
+   }
   Future<FirebaseUser> _handleSignIn() async {
     final GoogleSignInAccount googleUser = await _googleSignIn.signIn();
     final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
@@ -31,12 +58,14 @@ class _LogState extends State<Log> {
       Provider.of<Usuario>(context).correo=user.email;
       Provider.of<Usuario>(context).nombre=user.displayName;
       Provider.of<Usuario>(context).foto= user.photoUrl;
-      Navigator.push(context, CupertinoPageRoute(builder: (context)=>Menu()));
+
     }
 
 
     return user;
   }
+
+
 
 
 
@@ -57,32 +86,30 @@ class _LogState extends State<Log> {
                 Image.asset("assets/logo.png",scale: 1.0),
 
                const SizedBox(
-                 height: 1.0,
-               ),
-                ListTile(
-                    title: const Text("¡Organiza tu viaje!",textAlign: TextAlign.center,style: const TextStyle(fontWeight: FontWeight.bold),)),
-               const SizedBox(
                  height: 10.0,
                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    FacebookSignInButton(onPressed: () {
-                      // call authentication logic
-                    },
-                      borderRadius: 12.0,
-                      text: "Facebook",
-                    ),
-
-                    const SizedBox(height: 10.0,),
-                    GoogleSignInButton(
-                      text: "Google",
-                      onPressed: () {
-                        _handleSignIn();
+                FittedBox(
+                  fit: BoxFit.contain,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      FacebookSignInButton(onPressed: () {
+                        facebookLogin();
                       },
-                      borderRadius: 12.0,
-                    ),
-                  ],
+                        borderRadius: 12.0,
+                        text: "Facebook",
+                      ),
+
+                      const SizedBox(width: 10.0,),
+                      GoogleSignInButton(
+                        text: "Google",
+                        onPressed: () {
+                          _handleSignIn();
+                        },
+                        borderRadius: 12.0,
+                      ),
+                    ],
+                  ),
                 )
 
 
@@ -100,6 +127,23 @@ class _LogState extends State<Log> {
     );
   }
 
+
+    void currentUser(){
+     _auth.currentUser().then((use){
+       if(use!=null){
+         if(use.email!=null){
+           Provider.of<Usuario>(context).correo=use.email;
+           Provider.of<Usuario>(context).nombre=use.displayName;
+           Provider.of<Usuario>(context).foto= use.photoUrl;
+         }
+       }
+     });
+    }
+    @override
+  void initState() {
+    currentUser();
+    super.initState();
+  }
 
 
 
