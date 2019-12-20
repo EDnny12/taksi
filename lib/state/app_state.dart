@@ -4,9 +4,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_google_places/flutter_google_places.dart';
+import 'package:fluttie/fluttie.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_webservice/places.dart';
+import 'package:provider/provider.dart';
 import 'package:taksi/providers/usuario.dart';
 import 'package:taksi/requests/google_maps_requests.dart';
 
@@ -41,6 +43,7 @@ class AppState with ChangeNotifier {
     _loadingInitialPosition();
   }
 
+
   void setCustomMapPin() async {
     pinLocationIcon = await BitmapDescriptor.fromAssetImage(
         ImageConfiguration(devicePixelRatio: 2), 'assets/marker.png');
@@ -62,6 +65,8 @@ class AppState with ChangeNotifier {
     notifyListeners();
   }
 
+
+
   void getDestinationLocation(context) async {
     Prediction p = await PlacesAutocomplete.show(
         context: context,
@@ -69,7 +74,7 @@ class AppState with ChangeNotifier {
         mode: Mode.overlay,
         language: "es", //es-419
         components: [
-          Component(Component.country, "MX") //"MX"
+          Component(Component.country, "MX"), //"MX" MX-CHP
         ]);
     if (p != null) {
       PlacesDetailsResponse detalles =
@@ -92,7 +97,7 @@ class AppState with ChangeNotifier {
       //mover la camara
       mapController.animateCamera(
         CameraUpdate.newCameraPosition(
-            CameraPosition(target: LatLng(lat, lng), zoom: 16.0)),
+            CameraPosition(target: LatLng(lat, lng), zoom: 17.0)),
       );
 
       //mover la camara entre dos puntos
@@ -123,35 +128,10 @@ class AppState with ChangeNotifier {
     mapController.animateCamera(
       CameraUpdate.newCameraPosition(CameraPosition(
           target: LatLng(coordenadas.latitude, coordenadas.longitude),
-          zoom: 16.0)),
+          zoom: 17.0)),
     );
     notifyListeners();
   }
-
-  /*void showAlert(context){
-    var alert = AlertDialog(
-      title: Text('Lo sentimos!'),
-      content: Text('Tak-si aun no se encuentra en tu ciudad'),
-      actions: <Widget>[
-        FlatButton(
-          onPressed: (){
-            Navigator.of(context).pop();
-          },
-          child: Text('Solicitar',
-            style: TextStyle(
-              fontSize: 20
-            ),),
-        )
-      ],
-      elevation: 24,
-    );
-    showDialog(
-        context: context,
-      builder: (BuildContext c) {
-          return alert;
-      }
-    );
-  }*/
 
   showAlert(BuildContext context) {
     return showDialog(
@@ -192,9 +172,9 @@ class AppState with ChangeNotifier {
                     height: 42,
                     child: RaisedButton.icon(
                       onPressed: () {
-                        insertSolicitud();
+                        insertSolicitud(context);
                         Navigator.of(context).pop();
-                        showSnackBar();
+                        showSnackBar('Tu solicitud ha sido enviada!');
                       },
                       label: Text('Solicitar', style: TextStyle(fontSize: 20)),
                       icon: Icon(Icons.departure_board),
@@ -342,10 +322,8 @@ class AppState with ChangeNotifier {
   void showBottomShettLineas(context) async {
     getCiudadAfiliada().then((ciudad) async {
       if (ciudad == 0) {
-        print("ciudad no registrada");
         showAlert(context);
       } else {
-        print("ciudad registrada");
         showModalBottomSheet(
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.only(
@@ -379,7 +357,15 @@ class AppState with ChangeNotifier {
                           return ListTile(
                             leading: Icon(Icons.directions_car),
                             title: Text(document["nombre"]),
-                            onTap: () {},
+                            onTap: () {
+                              print('Selecciono ' + document["nombre"]);
+                              print('Selecciono ' + " " +  _initialPosition.latitude.toString() + " " + _initialPosition.longitude.toString());
+                              print('Selecciono ' + " " +destination.latitude.toString() + " " + destination.longitude.toString());
+                              print('Selecciono ' + ciudadUsuario);
+                              print('Selecciono ' + Provider.of<Usuario>(context).nombre);
+                              print('Selecciono ' + Provider.of<Usuario>(context).correo);
+                              Navigator.of(context).pop();
+                              },
                           );
                         }).toList(),
                       );
@@ -391,9 +377,9 @@ class AppState with ChangeNotifier {
     });
   }
 
-  showSnackBar() {
+  showSnackBar(String texto) {
     final snackBar = SnackBar(
-      content: Text('Tu solicitud ha sido enviada!'),
+      content: Text(texto),
     );
     scaffoldKey.currentState.showSnackBar(snackBar);
   }
@@ -414,9 +400,9 @@ class AppState with ChangeNotifier {
     return qn.documents.length;
   }
 
-  void insertSolicitud() async {
+  void insertSolicitud(context) async {
     await databaseReference.collection("solicitudes").document().setData({
-      'usuario': 'victor',
+      'usuario': Provider.of<Usuario>(context).nombre,
       'ciudad': ciudadUsuario,
     });
   }

@@ -8,6 +8,7 @@ import 'login/login.dart';
 
 //void main() => runApp(MyApp());
 void main(){
+  WidgetsFlutterBinding.ensureInitialized();
   return runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider.value(value: AppState())
