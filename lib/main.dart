@@ -3,16 +3,14 @@ import 'package:provider/provider.dart';
 import 'package:taksi/providers/dynamic_theme.dart';
 import 'package:taksi/providers/usuario.dart';
 import 'package:taksi/state/app_state.dart';
+import 'package:taksi/screen/main_screen.dart';
 import 'login/login.dart';
 
-
 //void main() => runApp(MyApp());
-void main(){
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
   return runApp(MultiProvider(
-    providers: [
-      ChangeNotifierProvider.value(value: AppState())
-    ],
+    providers: [ChangeNotifierProvider.value(value: AppState())],
     child: MyApp(),
   ));
 }
@@ -23,29 +21,24 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context)=>Usuario()),
-
+        ChangeNotifierProvider(create: (context) => Usuario()),
       ],
       child: DynamicTheme(
           defaultBrightness: Brightness.light,
           data: (brightness) => ThemeData(
-
-            brightness: brightness,
-
-          ),
-        themedWidgetBuilder:(context,theme) {
-          return MaterialApp(
-
-            darkTheme: ThemeData(
-                brightness: Brightness.dark
-            ),
-            title: 'TAK-SI',
-            theme: theme,
-            home: Log(),
-          );
-        }
-      ),
+                brightness: brightness,
+              ),
+          themedWidgetBuilder: (context, theme) {
+            return MaterialApp(
+              darkTheme: ThemeData(
+                brightness: Brightness.dark,
+              ),
+              title: 'TAK-SI',
+              theme: theme,
+              home:
+                  Provider.of<Usuario>(context).nombre != null ? Menu() : Log(),
+            );
+          }),
     );
   }
 }
-

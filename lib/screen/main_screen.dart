@@ -1,14 +1,17 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:taksi/providers/dynamic_theme.dart';
+import 'package:taksi/providers/estilos.dart';
+import 'package:taksi/providers/metodos.dart';
 import 'package:taksi/providers/usuario.dart';
-import 'dart:io';
-
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:taksi/screen/viajes.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:taksi/screen/viajesGratis.dart';
 import 'package:taksi/state/app_state.dart';
-
-var busy = false, done = false;
 
 class Menu extends StatefulWidget {
   @override
@@ -31,44 +34,39 @@ class _MenuState extends State<Menu> {
     super.initState();
   }
 
-
   void changeBrightness() {
     DynamicTheme.of(context).setBrightness(
         Theme.of(context).brightness == Brightness.dark
             ? Brightness.light
             : Brightness.dark);
-    if (Theme.of(context).brightness == Brightness.dark) {
-      Provider.of<Usuario>(context).dark = true;
-    } else {
-      Provider.of<Usuario>(context).dark = false;
-    }
-    print("variable" + Usuario().darkMode.toString());
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       key: Provider.of<AppState>(context).scaffoldKey,
-
-      body: SafeArea(
-        child: Stack(
-          alignment: Alignment.topLeft,
-          children: <Widget>[
-            Map(),
-            IconButton(
-
-              icon: Icon(Icons.menu),
-              onPressed: (){
-                Provider.of<AppState>(context).scaffoldKey.currentState.openDrawer();
-              },
-            ),
-          ],
-        ),
+      body: Stack(
+        alignment: Alignment.topLeft,
+        children: <Widget>[
+          Map(),
+          IconButton(
+            icon: Icon(Icons.menu),
+            onPressed: () {
+              Provider.of<AppState>(context)
+                  .scaffoldKey
+                  .currentState
+                  .openDrawer();
+            },
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         label: Text('Continuar'),
         onPressed: () {
-          if(Provider.of<AppState>(context).destinationController.text.isEmpty) {
+          if (Provider.of<AppState>(context)
+              .destinationController
+              .text
+              .isEmpty) {
             Provider.of<AppState>(context).showSnackBar('Ingrese el destino!');
           } else {
             Provider.of<AppState>(context).showBottomShettLineas(context);
@@ -78,10 +76,7 @@ class _MenuState extends State<Menu> {
           Icons.check,
         ),
       ),
-      //floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-
       drawer: Drawer(
-
         child: ListView(
           children: <Widget>[
             Padding(
@@ -104,18 +99,23 @@ class _MenuState extends State<Menu> {
                 backgroundColor: Colors.transparent,
               ),
             ),
-            /*
-            UserAccountsDrawerHeader(
-              accountEmail: Text(Provider.of<Usuario>(context).correo),
-              accountName: Text(Provider.of<Usuario>(context).nombre),
-              currentAccountPicture: CircleAvatar(child: Image.network(Provider.of<Usuario>(context).foto),),
-
-            ),
-
-             */
-
+            Padding(
+                padding: const EdgeInsets.only(top: 0.0, right: 10.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: <Widget>[
+                    Calificacion(),
+                    const SizedBox(
+                      width: 2.0,
+                    ),
+                    Icon(
+                      Icons.star,
+                      color: Color(0xFFFFD700),
+                    )
+                  ],
+                )),
             const SizedBox(
-              height: 20.0,
+              height: 20,
             ),
             const Padding(
               padding: const EdgeInsets.only(left: 15.0, bottom: 5.0),
@@ -129,11 +129,19 @@ class _MenuState extends State<Menu> {
             ListTile(
               leading: const Icon(Icons.local_taxi),
               title: const Text("Mis viajes"),
-              onTap: () {},
+              onTap: () {
+                Navigator.of(context).pop();
+                Navigator.push(context,
+                    CupertinoPageRoute(builder: (context) => Viajes()));
+              },
             ),
             ListTile(
-              leading: const Icon(Icons.star),
-              title: const Text("Calificaciones"),
+              leading: const Icon(Icons.card_travel),
+              title: const Text("Viajes gratis"),
+              onTap: () {
+                Navigator.push(context,
+                    CupertinoPageRoute(builder: (context) => Gratis()));
+              },
             ),
             ListTile(
               leading: const Icon(Icons.share),
@@ -141,7 +149,7 @@ class _MenuState extends State<Menu> {
             ),
             ListTile(
               leading: const Icon(Icons.help),
-              title: const Text("Tutorial"),
+              title: const Text("Ayuda"),
             ),
             const SizedBox(
               height: 40.0,
@@ -157,7 +165,10 @@ class _MenuState extends State<Menu> {
             Divider(),
             SwitchListTile(
               onChanged: (sa) {
-                changeBrightness();
+                DynamicTheme.of(context).setBrightness(
+                    Theme.of(context).brightness == Brightness.dark
+                        ? Brightness.light
+                        : Brightness.dark);
               },
               title: const Text("Tema oscuro"),
               subtitle:
@@ -169,6 +180,13 @@ class _MenuState extends State<Menu> {
             ListTile(
               leading: const Icon(Icons.exit_to_app),
               title: const Text("Cerrar sesión"),
+              onTap: () async {
+                Navigator.of(context).pop();
+                await FirebaseAuth.instance.signOut();
+                Provider.of<Usuario>(context).nombre = null;
+                Provider.of<Usuario>(context).foto = null;
+                Provider.of<Usuario>(context).correo = null;
+              },
             ),
             const SizedBox(
               height: 40.0,
@@ -191,6 +209,62 @@ class _MenuState extends State<Menu> {
         ),
       ),
     );
+  }
+}
+
+class Calificacion extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<QuerySnapshot>(
+      stream: Firestore.instance
+          .collection("calificaciones_usuarios")
+          .where("email", isEqualTo: Provider.of<Usuario>(context).correo)
+          .snapshots(),
+      builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+        if (snapshot.hasError) return const Text('ERROR AL CARGAR LOS AVISOS');
+        switch (snapshot.connectionState) {
+          case ConnectionState.waiting:
+            return const Text("");
+
+          default:
+            return lista(snapshot.data.documents, context);
+        }
+      },
+    );
+  }
+
+  Widget lista(List<DocumentSnapshot> document, BuildContext context) {
+    if (document.length == 0) {
+      return const Text(
+        "Aún no tienes calificación",
+        style: const TextStyle(color: Colors.grey, fontSize: 11.5),
+      );
+    } else {
+      final datos = document[0].data["calificacion"];
+      return GestureDetector(
+          onTap: () {
+            showGeneralDialog(
+                barrierColor: Colors.black.withOpacity(0.5),
+                transitionBuilder: (context, a1, a2, widget) {
+                  return Transform.scale(
+                    scale: a1.value,
+                    child: Opacity(
+                        opacity: a1.value,
+                        child: Metodos()
+                            .showInfoCalificacion(datos[0] / datos[1])),
+                  );
+                },
+                transitionDuration: Duration(milliseconds: 200),
+                barrierDismissible: true,
+                barrierLabel: '',
+                context: context,
+                pageBuilder: (context, animation1, animation2) {});
+          },
+          child: Text(
+            (datos[0] / datos[1]).toStringAsFixed(1),
+            textAlign: TextAlign.right,
+          ));
+    }
   }
 }
 
