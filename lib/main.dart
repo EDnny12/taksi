@@ -9,10 +9,11 @@ import 'login/login.dart';
 //void main() => runApp(MyApp());
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  return runApp(MultiProvider(
-    providers: [ChangeNotifierProvider.value(value: AppState())],
+  return runApp(MyApp());
+  /*return runApp(MultiProvider(
+    //providers: [],
     child: MyApp(),
-  ));
+  ));*/
 }
 
 class MyApp extends StatelessWidget {
@@ -22,6 +23,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => Usuario()),
+        //ChangeNotifierProvider.value(value: AppState(context)),
       ],
       child: DynamicTheme(
           defaultBrightness: Brightness.light,
@@ -30,13 +32,21 @@ class MyApp extends StatelessWidget {
               ),
           themedWidgetBuilder: (context, theme) {
             return MaterialApp(
+              debugShowCheckedModeBanner: false,
               darkTheme: ThemeData(
                 brightness: Brightness.dark,
               ),
               title: 'TAK-SI',
               theme: theme,
-              home:
-                  Provider.of<Usuario>(context).nombre != null ? Menu() : Log(),
+              home: Provider.of<Usuario>(context).nombre != null
+                  ? MultiProvider(
+                      providers: [
+                        ChangeNotifierProvider(
+                            create: (context) => AppState(context)),
+                      ],
+                      child: Menu(),
+                    )
+                  : Log(),
             );
           }),
     );

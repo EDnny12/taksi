@@ -4,7 +4,6 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:taksi/providers/dynamic_theme.dart';
-import 'package:taksi/providers/estilos.dart';
 import 'package:taksi/providers/metodos.dart';
 import 'package:taksi/providers/usuario.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -49,33 +48,52 @@ class _MenuState extends State<Menu> {
         alignment: Alignment.topLeft,
         children: <Widget>[
           Map(),
-          IconButton(
-            icon: Icon(Icons.menu),
-            onPressed: () {
-              Provider.of<AppState>(context)
-                  .scaffoldKey
-                  .currentState
-                  .openDrawer();
-            },
+          Positioned(
+            top: 20,
+            left: 5,
+            child: IconButton(
+              iconSize: 30,
+              icon: Icon(Icons.menu),
+              onPressed: () {
+                Provider.of<AppState>(context)
+                    .scaffoldKey
+                    .currentState
+                    .openDrawer();
+              },
+            ),
+          ),
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: <Widget>[
+                Provider.of<AppState>(context).showBtnPersistentDialog
+                    ? FlatButton(
+                        child: new Text('Mi Tak-si'),
+                        onPressed: () {
+                          Provider.of<AppState>(context)
+                              .persistentBottomSheet(context);
+                        },
+                      )
+                    : const SizedBox()
+              ],
+            ),
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        label: Text('Continuar'),
-        onPressed: () {
-          if (Provider.of<AppState>(context)
-              .destinationController
-              .text
-              .isEmpty) {
-            Provider.of<AppState>(context).showSnackBar('Ingrese el destino!');
-          } else {
-            Provider.of<AppState>(context).showBottomShettLineas(context);
-          }
-        },
-        icon: Icon(
-          Icons.check,
-        ),
-      ),
+      /*floatingActionButton:
+          Provider.of<AppState>(context).destinationController.text.isNotEmpty
+              ? Provider.of<AppState>(context).showFloating
+                  ? FloatingActionButton.extended(
+                      label: Text('Continuar'),
+                      onPressed: () {
+                        //Provider.of<AppState>(context).showBottomShettLineas(context);
+                      },
+                      icon: Icon(
+                        Icons.check,
+                      ),
+                    )
+                  : const SizedBox()
+              : const SizedBox(),*/
       drawer: Drawer(
         child: ListView(
           children: <Widget>[
@@ -241,6 +259,7 @@ class Calificacion extends StatelessWidget {
       );
     } else {
       final datos = document[0].data["calificacion"];
+      String califi = (datos[0] / datos[1]).toStringAsFixed(1);
       return GestureDetector(
           onTap: () {
             showGeneralDialog(
@@ -261,7 +280,7 @@ class Calificacion extends StatelessWidget {
                 pageBuilder: (context, animation1, animation2) {});
           },
           child: Text(
-            (datos[0] / datos[1]).toStringAsFixed(1),
+            califi,
             textAlign: TextAlign.right,
           ));
     }
@@ -285,9 +304,9 @@ class _MapState extends State<Map> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    SpinKitPouringHourglass(
+                    SpinKitFadingCircle(
                       color: Colors.black,
-                      size: 50.0,
+                      size: 60.0,
                     ),
                   ],
                 ),
@@ -297,8 +316,12 @@ class _MapState extends State<Map> {
                 Visibility(
                   visible: appState.locationServiceActive == false,
                   child: Text(
-                    "Por favor active el gps",
-                    style: TextStyle(color: Colors.amber, fontSize: 18.0),
+                    "Por favor active el gps o verifique su conexion a internet",
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 18.0,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
                 )
               ],
@@ -310,6 +333,8 @@ class _MapState extends State<Map> {
                 initialCameraPosition: CameraPosition(
                     target: appState.initialPosition, zoom: 17.0),
                 onMapCreated: appState.onCreated,
+                myLocationButtonEnabled: false,
+                mapToolbarEnabled: false,
                 myLocationEnabled: true,
                 mapType: MapType.normal, //normal
                 compassEnabled: true,
@@ -322,6 +347,21 @@ class _MapState extends State<Map> {
                 polylines: appState.polyLines,
               ),
               Positioned(
+                top: 24,
+                right: 5,
+                child: IconButton(
+                  iconSize: 30,
+                  icon: Icon(
+                    Icons.my_location,
+                    color: Colors.blueGrey,
+                  ),
+                  onPressed: () {
+                    Provider.of<AppState>(context).getUserLocation(context);
+                  },
+                ),
+              ),
+
+              /*Positioned(
                 top: 50.0,
                 right: 15.0,
                 left: 15.0,
@@ -356,50 +396,50 @@ class _MapState extends State<Map> {
                     ),
                   ),
                 ),
-              ),
-              Positioned(
-                top: 105.0,
-                right: 15.0,
-                left: 15.0,
-                child: Container(
-                  height: 50.0,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(3.0),
-                      color: Theme.of(context).scaffoldBackgroundColor,
-                      boxShadow: [
-                        BoxShadow(
-                            color: Colors.grey,
-                            offset: Offset(1.0, 5.0),
-                            blurRadius: 10.0,
-                            spreadRadius: 3)
-                      ]),
-                  child: TextField(
-                    onTap: () async {
-                      appState.getDestinationLocation(context);
-                    },
-                    cursorColor: Colors.blue.shade900,
-                    controller: appState.destinationController,
-                    textInputAction: TextInputAction.go,
-                    onSubmitted: (value) {
-                      appState.sendRequest(value);
-                    },
-                    decoration: InputDecoration(
-                      icon: Container(
-                        margin: EdgeInsets.only(left: 20.0, top: 5.0),
-                        width: 10.0,
-                        height: 10,
-                        child: Icon(
-                          Icons.local_taxi,
+              ),*/
+              Provider.of<AppState>(context).showBtnPersistentDialog == false
+                  ? Positioned(
+                      top: 70.0,
+                      right: 15.0,
+                      left: 15.0,
+                      child: Container(
+                        height: 50.0,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(3.0),
+                            color: Theme.of(context).scaffoldBackgroundColor,
+                            boxShadow: [
+                              BoxShadow(
+                                  color: Colors.grey,
+                                  offset: Offset(1.0, 5.0),
+                                  blurRadius: 10.0,
+                                  spreadRadius: 3)
+                            ]),
+                        child: TextField(
+                          onTap: () async {
+                            appState.getDestinationLocation(context);
+                          },
+                          cursorColor: Colors.blue.shade900,
+                          controller: appState.destinationController,
+                          textInputAction: TextInputAction.go,
+                          decoration: InputDecoration(
+                            icon: Container(
+                              margin: EdgeInsets.only(left: 20.0, top: 5.0),
+                              width: 10.0,
+                              height: 10,
+                              child: Icon(
+                                Icons.local_taxi,
+                              ),
+                            ),
+                            hintText: "¿A donde vamos?",
+                            border: InputBorder.none,
+                            contentPadding:
+                                EdgeInsets.only(left: 15.0, top: 16.0),
+                          ),
                         ),
                       ),
-                      hintText: "Destino",
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.only(left: 15.0, top: 16.0),
-                    ),
-                  ),
-                ),
-              ),
+                    )
+                  : const SizedBox()
             ],
           );
   }

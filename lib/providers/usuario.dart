@@ -4,6 +4,7 @@ class Usuario with ChangeNotifier {
   String _correo = null;
   String _nombre = null;
   String _foto = null;
+  String _calificacion = null;
   bool darkMode = false;
 
   set dark(final modo) {
@@ -36,4 +37,11 @@ class Usuario with ChangeNotifier {
     this._foto = fo;
     notifyListeners();
   }
+
+  String get calificacion => _calificacion;
+
+  set calificacion(String value) {
+    _calificacion = value;
+  }
+
 }

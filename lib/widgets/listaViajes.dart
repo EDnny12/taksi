@@ -151,16 +151,15 @@ class MisViajes extends StatelessWidget {
              mainAxisAlignment: MainAxisAlignment.center,
 
              children: <Widget>[
-               Image.asset("assets/taxo.png",scale: 2.7,color:Theme.of(context).brightness==Brightness.dark? Colors.white38:Colors.black,),
+               Image.asset("assets/taxo.png",scale: 1.5,color:Theme.of(context).brightness==Brightness.dark? Colors.white38:Colors.black,),
                const SizedBox(height: 40.0,),
-               Text("Aún no has realizado algún viaje",style: const TextStyle(fontSize: 25.0,fontWeight: FontWeight.bold),),
+               Center(child: Text("Aún no has realizado algún viaje",style: const TextStyle(fontSize: 25.0),textAlign: TextAlign.center,)),
                const SizedBox(height: 18.0,),
-               Text("¿Qué estás esperando?",style: const TextStyle(fontSize: 25.0,fontWeight: FontWeight.bold),),
+               Text("¿Qué estás esperando?",style: const TextStyle(fontSize: 25.0),),
                const SizedBox(height: 30.0,),
                SizedBox(
                  height: 50.0,
                  child: RaisedButton(child: const Text("Planea tu primer viaje",style: const TextStyle(fontSize: 20.0,fontWeight: FontWeight.bold),),onPressed: (){
-
                    Navigator.of(context).pop();
                  },
                  shape: StadiumBorder(),
@@ -169,7 +168,5 @@ class MisViajes extends StatelessWidget {
              ],
            ),
          );
-
-
   }
 }
