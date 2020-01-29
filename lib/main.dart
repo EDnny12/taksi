@@ -28,8 +28,8 @@ class MyApp extends StatelessWidget {
       child: DynamicTheme(
           defaultBrightness: Brightness.light,
           data: (brightness) => ThemeData(
-                brightness: brightness,
-              ),
+            brightness: brightness,
+          ),
           themedWidgetBuilder: (context, theme) {
             return MaterialApp(
               debugShowCheckedModeBanner: false,
@@ -40,12 +40,12 @@ class MyApp extends StatelessWidget {
               theme: theme,
               home: Provider.of<Usuario>(context).nombre != null
                   ? MultiProvider(
-                      providers: [
-                        ChangeNotifierProvider(
-                            create: (context) => AppState(context)),
-                      ],
-                      child: Menu(),
-                    )
+                providers: [
+                  ChangeNotifierProvider(
+                      create: (context) => AppState(context)),
+                ],
+                child: Menu(),
+              )
                   : Log(),
             );
           }),

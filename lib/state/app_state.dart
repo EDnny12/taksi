@@ -14,7 +14,6 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:provider/provider.dart';
-import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:taksi/providers/usuario.dart';
 import 'package:taksi/requests/google_maps_requests.dart';
 
@@ -34,7 +33,12 @@ class AppState with ChangeNotifier {
       BtnCancelViaje = true;
   List<String> listLineas = List<String>();
   var listDriver, listTaxi, list;
-  double distancia = 0.0, dis, latDriver, lonDriver, calificacionDriver = 0.0;
+  double distancia = 0.0,
+      dis,
+      latDriver,
+      lonDriver,
+      calificacionDriver = 0.0,
+      sizeSlider = 0, sizeSliderOpen = 310;
   static LatLng _initialPosition, destination, ubicationDriver;
   LatLng _lastPosition = _initialPosition, position;
   bool locationServiceActive = true;
@@ -62,6 +66,7 @@ class AppState with ChangeNotifier {
   //Position position;
   Geolocator geolocator = Geolocator();
   PersistentBottomSheetController controller, controller2;
+  TextEditingController cupon = TextEditingController();
 
   // firebase
   final databaseReference = Firestore.instance;
@@ -351,7 +356,8 @@ class AppState with ChangeNotifier {
   }
 
   persistentBottomSheetDatosViaje(context2, String tiempo, String distancia) {
-    controller2 = scaffoldKey.currentState.showBottomSheet((context) {
+    controller2 = scaffoldKey.currentState.showBottomSheet((context, {backgroundColor: Colors.transparent}) {
+      //BottomSheetThemeData(backgroundColor: Colors.transparent);
       return Container(
         margin: const EdgeInsets.only(top: 5, left: 5, right: 5, bottom: 5),
         height: 150,
@@ -365,39 +371,113 @@ class AppState with ChangeNotifier {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.end,
           children: <Widget>[
-            Center(
-              child: Text(
-                tiempo,
-                style: TextStyle(fontSize: 25, color: Colors.white),
-                textAlign: TextAlign.center,
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  /*
+                  Text(
+                    'Tiempo estimado',
+                    style: TextStyle(color: Colors.white70, fontSize: 16),
+                  ),*/
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Text(
+                        tiempo,
+                        style: TextStyle(color: Colors.white, fontSize: 20),
+                      ),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      Text(
+                        distancia,
+                        style: TextStyle(color: Colors.white, fontSize: 20),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
             SizedBox(
               height: 5,
             ),
-            Center(
-              child: Text(
-                distancia,
-                style: TextStyle(fontSize: 20, color: Colors.white),
-                textAlign: TextAlign.center,
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Expanded(
+                  child: Container(
+                    margin: EdgeInsets.only(left: 10, right: 10),
+                    height: 1.5,
+                    //color: Colors.blueGrey,
+                    color: Colors.white,
+                  ),
+                ),
+                Text(
+                  'Metodo de pago',
+                  style: TextStyle(fontSize: 16, color: Colors.white70),
+                ),
+                Expanded(
+                  child: Container(
+                    margin: EdgeInsets.only(left: 10, right: 10),
+                    height: 1.5,
+                    //color: Colors.blueGrey,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
             ),
-            SizedBox(
-              height: 5,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Expanded(
+                    child: Column(
+                  children: <Widget>[
+                    Text(
+                      'Efectivo',
+                      style: TextStyle(fontSize: 16, color: Colors.white70),
+                    ),
+                    Text(
+                      '\$ 35.00',
+                      style: TextStyle(fontSize: 20, color: Colors.white),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                )),
+                /*Expanded(
+                  child: Container(
+                    //margin: EdgeInsets.only(left: 10, right: 10),
+                    width: 5.5,
+                    //color: Colors.blueGrey,
+                    color: Colors.white,
+                  ),
+                ),*/
+                Expanded(
+                    child: FlatButton(
+                  child: new Text(
+                    'Código',
+                    style: TextStyle(color: Colors.white, fontSize: 15),
+                  ),
+                  onPressed: () {
+                    print('precionado');
+                    showAlertCodigoViaje(context);
+                  },
+                )),
+              ],
             ),
-            Center(
+            /*Center(
               child: Text(
                 '\$ 35.00',
                 style: TextStyle(fontSize: 25, color: Colors.white),
                 textAlign: TextAlign.center,
               ),
-            ),
+            ),*/
             SizedBox(
-              height: 7,
+              height: 5,
             ),
             SizedBox(
               width: double.infinity,
-              height: 42,
+              height: 35,
               child: RaisedButton.icon(
                 color: Colors.blue,
                 label: Text('Continuar',
@@ -467,16 +547,6 @@ class AppState with ChangeNotifier {
                             cargar = false;
                           });
                         }
-                        /*return CarouselSlider.builder(
-                          itemCount: listLineas.length,
-                          itemBuilder: (BuildContext context, int itemIndex) =>
-                              Container(
-                                child: Center(
-                                    child: Text(listLineas[0].data('nombre'))
-                                ),
-                              ),
-                        );*/
-
                         return InkWell(
                           onTap: () {
                             getLocationDrivers(
@@ -555,36 +625,6 @@ class AppState with ChangeNotifier {
                             }).toList(),
                           ),
                         );
-
-                      /* return ListView(
-                          shrinkWrap: true,
-                          children: snapshot.data.documents
-                              .map((DocumentSnapshot document) {
-                            return ListTile(
-                              leading: Icon(Icons.directions_car),
-                              title: Text(document["nombre"]),
-                              onTap: () {
-                                //insertSolicitudViaje
-                                getLocationDrivers(
-                                    document['nombre'],
-                                    _initialPosition.latitude.toString() +
-                                        " " +
-                                        _initialPosition.longitude.toString(),
-                                    destination.latitude.toString() +
-                                        " " +
-                                        destination.longitude.toString(),
-                                    ciudadUsuario,
-                                    Provider.of<Usuario>(context).nombre,
-                                    Provider.of<Usuario>(context).correo,
-                                    Provider.of<Usuario>(context).foto,
-                                    context2);
-                                Navigator.of(context).pop();
-                                showAlertLoader(
-                                    context2, 'Bucando el Tak-si mas cercano!');
-                              },
-                            );
-                          }).toList(),
-                        );*/
                     }
                   },
                 ),
@@ -844,8 +884,8 @@ class AppState with ChangeNotifier {
       if (listTaxi.isNotEmpty) {
         showLocationDriver(context, chofer);
         mensajeTime = 'Su Tak-si llega en: ';
-        persistentBottomSheet(context);
-        //sliderPanelDatosChofer(context);
+        //persistentBottomSheet(context);
+        sliderPanelDatosChofer(context);
         Navigator.pop(context);
       } else {
         print('lista vacia');
@@ -855,6 +895,7 @@ class AppState with ChangeNotifier {
 
   //mostrar los datos del chofer
   persistentBottomSheet(context2) {
+    //context2
     controller2.closed;
     showFloating = false;
     showBtnPersistentDialog = true;
@@ -1086,7 +1127,7 @@ class AppState with ChangeNotifier {
                               color: Colors.white,
                             ),
                             onPressed: () {
-                              showCustomDialogWithImage(context2);
+                              showCustomDialogWithImage(context2); //context2
                             },
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.only(
@@ -1105,6 +1146,337 @@ class AppState with ChangeNotifier {
     controller.closed.then((value) {
       //persistentBottomSheet(context);
     });
+  }
+
+  sliderPanelDatosChofer(context) {
+    controller2.closed;
+    showFloating = false;
+    sizeSliderOpen = 310;
+    sizeSlider = 70;
+    //showBtnPersistentDialog = true;
+    controller = scaffoldKey.currentState.showBottomSheet((context) {
+      return const SizedBox();
+    });
+  }
+
+  //widget cuando esta cerrado
+  Widget floatingCollapsed(context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.blueGrey,
+        borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(15.0), topRight: Radius.circular(15.0)),
+      ),
+      margin: const EdgeInsets.fromLTRB(10, 10, 10, 0.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Expanded(
+            child: Center(
+              child: Text(
+                showFloating ? '' : listTaxi[0].data["placa"],
+                style: TextStyle(color: Colors.white, fontSize: 21),
+              ),
+            ),
+          ),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Text(
+                  Provider.of<AppState>(context).mensajeTime,
+                  style: TextStyle(color: Colors.white, fontSize: 14),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Text(
+                      Provider.of<AppState>(context).tiempoChofer,
+                      style: TextStyle(color: Colors.white, fontSize: 19),
+                    ),
+                    SizedBox(
+                      width: 5,
+                    ),
+                    Text(
+                      Provider.of<AppState>(context).distanciaChofer,
+                      style: TextStyle(color: Colors.white, fontSize: 19),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  //widget cuando esta abierto
+  Widget floatingPanel(context) {
+    return Container(
+      decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.all(Radius.circular(15.0)),
+          boxShadow: [
+            BoxShadow(
+              blurRadius: 20.0,
+              color: Colors.grey,
+            ),
+          ]),
+      margin: const EdgeInsets.all(18.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        mainAxisSize: MainAxisSize.min, //adaptar al tamaño
+        children: <Widget>[
+          SizedBox(
+            height: 5,
+          ),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Text(
+                  Provider.of<AppState>(context).mensajeTime,
+                  style: TextStyle(color: Colors.blueGrey, fontSize: 16),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Text(
+                      Provider.of<AppState>(context).tiempoChofer,
+                      style: TextStyle(color: Colors.black, fontSize: 20),
+                    ),
+                    SizedBox(
+                      width: 5,
+                    ),
+                    Text(
+                      Provider.of<AppState>(context).distanciaChofer,
+                      style: TextStyle(color: Colors.black, fontSize: 20),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          SizedBox(
+            height: 5,
+          ),
+          Container(
+            margin: EdgeInsets.only(left: 10, right: 10),
+            height: 1.5,
+            //color: Colors.blueGrey,
+            color: Colors.black54,
+          ),
+          SizedBox(
+            height: 5,
+          ),
+          Row(
+            children: <Widget>[
+              SizedBox(
+                width: 10,
+              ),
+              Column(
+                children: <Widget>[
+                  CircleAvatar(
+                    radius: 25,
+                    backgroundImage:
+                        NetworkImage(Provider.of<Usuario>(context).foto),
+                    backgroundColor: Colors.transparent,
+                  ),
+                  Row(
+                    children: <Widget>[
+                      Text(
+                          showFloating
+                              ? ''
+                              : listDriver[0].data['calificacion'],
+                          style:
+                              TextStyle(fontSize: 15, color: Colors.blueGrey)),
+                      SizedBox(
+                        width: 5,
+                      ),
+                      Icon(
+                        Icons.star,
+                        color: Color(0xFFFFD700),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              SizedBox(
+                width: 20,
+              ),
+              Expanded(
+                child: Column(
+                  children: <Widget>[
+                    Row(
+                      children: <Widget>[
+                        Text(
+                          'Nombre:',
+                          style:
+                              TextStyle(fontSize: 15, color: Colors.blueGrey),
+                          textAlign: TextAlign.justify,
+                        ),
+                        SizedBox(
+                          width: 6,
+                        ),
+                        Text(
+                          showFloating ? '' : listDriver[0].data["nombre"],
+                          style: TextStyle(fontSize: 18, color: Colors.black),
+                          textAlign: TextAlign.justify,
+                        ),
+                        SizedBox(
+                          width: 6,
+                        ),
+                        Text(
+                          showFloating ? '' : listDriver[0].data["apellidos"],
+                          style: TextStyle(fontSize: 18, color: Colors.black),
+                          textAlign: TextAlign.justify,
+                        ),
+                      ],
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    Row(
+                      children: <Widget>[
+                        Text('Sitio:',
+                            style:
+                                TextStyle(fontSize: 15, color: Colors.blueGrey),
+                            textAlign: TextAlign.justify),
+                        SizedBox(
+                          width: 6,
+                        ),
+                        Text(
+                          showFloating ? '' : listTaxi[0].data["sitio"],
+                          style: TextStyle(fontSize: 18, color: Colors.black),
+                          textAlign: TextAlign.justify,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          SizedBox(
+            height: 4,
+          ),
+          Container(
+            margin: EdgeInsets.only(left: 10, right: 10),
+            height: 1.5,
+            //color: Colors.blueGrey,
+            color: Colors.black54,
+          ),
+          SizedBox(
+            height: 2,
+          ),
+          Row(
+            children: <Widget>[
+              CircleAvatar(
+                radius: 30.0,
+                child: Image.asset(
+                  "assets/taxiApp.png",
+                  height: 250,
+                  //width: MediaQuery.of(context).size.width,
+                  scale: 4,
+                ),
+                backgroundColor: Colors.transparent,
+              ),
+              SizedBox(
+                width: 20,
+              ),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: <Widget>[
+                    Row(
+                      children: <Widget>[
+                        Text('Placa:',
+                            style:
+                                TextStyle(fontSize: 15, color: Colors.blueGrey),
+                            textAlign: TextAlign.start),
+                        SizedBox(
+                          width: 6,
+                        ),
+                        Text(showFloating ? '' : listTaxi[0].data["placa"],
+                            style:
+                                TextStyle(fontSize: 18, color: Colors.black)),
+                      ],
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    Row(
+                      children: <Widget>[
+                        Text('No de Taxi:',
+                            style:
+                                TextStyle(fontSize: 15, color: Colors.blueGrey),
+                            textAlign: TextAlign.start),
+                        SizedBox(
+                          width: 6,
+                        ),
+                        Text(showFloating ? '' : listTaxi[0].data["numero"],
+                            style:
+                                TextStyle(fontSize: 18, color: Colors.black)),
+                      ],
+                    ),
+                    SizedBox(
+                      height: 5,
+                    ),
+                    Row(
+                      children: <Widget>[
+                        Text('Marca:',
+                            style:
+                                TextStyle(fontSize: 15, color: Colors.blueGrey),
+                            textAlign: TextAlign.start),
+                        SizedBox(
+                          width: 6,
+                        ),
+                        Text(showFloating ? '' : listTaxi[0].data["marca"],
+                            style:
+                                TextStyle(fontSize: 18, color: Colors.black)),
+                      ],
+                    ),
+                    SizedBox(
+                      height: 8,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          Row(
+            children: <Widget>[
+              BtnCancelViaje
+                  ? Expanded(
+                      child: SizedBox(
+                        //width: MediaQuery.of(context).size.width * 0.50,
+                        height: 38,
+                        child: RaisedButton.icon(
+                          color: Colors.red,
+                          label: Text('Cancelar',
+                              style:
+                                  TextStyle(fontSize: 20, color: Colors.white)),
+                          icon: Icon(
+                            Icons.cancel,
+                            color: Colors.white,
+                          ),
+                          onPressed: () {
+                            showCustomDialogWithImage(context); //context2
+                          },
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.only(
+                                  bottomLeft: Radius.circular(15),
+                                  bottomRight: Radius.circular(15))),
+                        ),
+                      ),
+                    )
+                  : const SizedBox()
+            ],
+          ),
+        ],
+      ),
+    );
   }
 
   void showLocationDriver(context, String chofer) {
@@ -1434,6 +1806,8 @@ class AppState with ChangeNotifier {
     } else {
       persistentBottomSheetDatosViaje(context, tiempo, distanciaViaje);
     }
+    sizeSlider = 0;
+    sizeSliderOpen = 0;
     notifyListeners();
   }
 
@@ -1624,6 +1998,60 @@ class AppState with ChangeNotifier {
       });
     });
   }
+
+  void showAlertCodigoViaje(context) {
+    Dialog alertCodigo = Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      child: Container(
+        height: 300,
+        width: 300,
+        child: Padding(
+          padding: const EdgeInsets.only(left: 10, right: 10),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Text(
+                "¿Tienes un cupón de descuento?",
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 25.0,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 20.0),
+              Text(
+                "Cuando tengas un cupón de descuento recuerda usarlo en los próximos 15 dias, de lo contrario el cupón perderá validez",
+                textAlign: TextAlign.justify,
+              ),
+              SizedBox(height: 20.0),
+              TextFormField(
+                controller: cupon,
+                decoration: InputDecoration(
+                    hintText: "Ingresa tu cupón",
+                    border: const UnderlineInputBorder(),
+                    filled: true,
+                    suffixIcon: Icon(Icons.local_offer)),
+              ),
+              SizedBox(height: 20.0),
+              FlatButton(
+                child: new Text(
+                  'Aceptar',
+                  style: TextStyle(color: Colors.black, fontSize: 15),
+                ),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  //print('precionado');
+                  //showAlertCodigoViaje(context);
+                },
+              )
+            ],
+          ),
+        ),
+      ),
+    );
+    showDialog(
+        context: context, builder: (BuildContext context) => alertCodigo);
+  }
 }
 
 //loader
@@ -1637,35 +2065,38 @@ showAlertLoader(BuildContext context, String texto) {
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           content: SingleChildScrollView(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: <Widget>[
-                SizedBox(
-                  height: 30,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    SpinKitFadingCircle(
-                      color: Colors.black,
-                      size: 55.0,
-                    ),
-                  ],
-                ),
-                SizedBox(
-                  height: 30,
-                ),
-                Center(
-                  child: Text(
-                    texto,
-                    style: TextStyle(fontSize: 20),
-                    textAlign: TextAlign.center,
+            child: Padding(
+              padding: const EdgeInsets.only(left: 10, right: 10),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: <Widget>[
+                  SizedBox(
+                    height: 30,
                   ),
-                ),
-                SizedBox(
-                  height: 15,
-                ),
-              ],
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      SpinKitFadingCircle(
+                        color: Colors.black,
+                        size: 55.0,
+                      ),
+                    ],
+                  ),
+                  SizedBox(
+                    height: 30,
+                  ),
+                  Center(
+                    child: Text(
+                      texto,
+                      style: TextStyle(fontSize: 20),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  SizedBox(
+                    height: 15,
+                  ),
+                ],
+              ),
             ),
           ),
         );

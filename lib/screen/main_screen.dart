@@ -7,6 +7,7 @@ import 'package:taksi/providers/dynamic_theme.dart';
 import 'package:taksi/providers/metodos.dart';
 import 'package:taksi/providers/usuario.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:taksi/screen/viajes.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:taksi/screen/viajesGratis.dart';
@@ -44,56 +45,49 @@ class _MenuState extends State<Menu> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: Provider.of<AppState>(context).scaffoldKey,
-      body: Stack(
-        alignment: Alignment.topLeft,
-        children: <Widget>[
-          Map(),
-          Positioned(
-            top: 20,
-            left: 5,
-            child: IconButton(
-              iconSize: 30,
-              icon: Icon(Icons.menu),
-              onPressed: () {
-                Provider.of<AppState>(context)
-                    .scaffoldKey
-                    .currentState
-                    .openDrawer();
-              },
+      body: SlidingUpPanel(
+        panel: Provider.of<AppState>(context).floatingPanel(context),
+        collapsed: Provider.of<AppState>(context).floatingCollapsed(context),
+        maxHeight: Provider.of<AppState>(context).sizeSliderOpen,
+        minHeight: Provider.of<AppState>(context).sizeSlider,
+        color: Colors.transparent,
+        body: Stack(
+          alignment: Alignment.topLeft,
+          children: <Widget>[
+            Map(),
+            Positioned(
+              top: 20,
+              left: 5,
+              child: IconButton(
+                iconSize: 30,
+                icon: Icon(Icons.menu),
+                onPressed: () {
+                  Provider.of<AppState>(context)
+                      .scaffoldKey
+                      .currentState
+                      .openDrawer();
+                },
+              ),
             ),
-          ),
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: <Widget>[
-                Provider.of<AppState>(context).showBtnPersistentDialog
-                    ? FlatButton(
-                        child: new Text('Mi Tak-si'),
-                        onPressed: () {
-                          Provider.of<AppState>(context)
-                              .persistentBottomSheet(context);
-                        },
-                      )
-                    : const SizedBox()
-              ],
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: <Widget>[
+                  Provider.of<AppState>(context).showBtnPersistentDialog
+                      ? FlatButton(
+                          child: new Text('Mi Tak-si'),
+                          onPressed: () {
+                            Provider.of<AppState>(context)
+                                .persistentBottomSheet(context);
+                          },
+                        )
+                      : const SizedBox()
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-      /*floatingActionButton:
-          Provider.of<AppState>(context).destinationController.text.isNotEmpty
-              ? Provider.of<AppState>(context).showFloating
-                  ? FloatingActionButton.extended(
-                      label: Text('Continuar'),
-                      onPressed: () {
-                        //Provider.of<AppState>(context).showBottomShettLineas(context);
-                      },
-                      icon: Icon(
-                        Icons.check,
-                      ),
-                    )
-                  : const SizedBox()
-              : const SizedBox(),*/
       drawer: Drawer(
         child: ListView(
           children: <Widget>[
