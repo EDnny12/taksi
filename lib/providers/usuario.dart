@@ -5,7 +5,18 @@ class Usuario with ChangeNotifier {
   String _nombre = null;
   String _foto = null;
   String _calificacion = null;
+  String _telefono = null;
+  String _ciudad = null;
+  String _estado = null;
+  String _inicio = null;
   bool darkMode = false;
+
+
+  String get inicio => _inicio;
+
+  set inicio(String value) {
+    _inicio = value;
+  }
 
   set dark(final modo) {
     this.darkMode = modo;
@@ -42,6 +53,24 @@ class Usuario with ChangeNotifier {
 
   set calificacion(String value) {
     _calificacion = value;
+  }
+
+  String get telefono => _telefono;
+
+  set telefono(String value) {
+    _telefono = value;
+  }
+
+  String get ciudad => _ciudad;
+
+  set ciudad(String value) {
+    _ciudad = value;
+  }
+
+  String get estado => _estado;
+
+  set estado(String value) {
+    _estado = value;
   }
 
 }

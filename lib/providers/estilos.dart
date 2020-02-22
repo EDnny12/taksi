@@ -6,7 +6,6 @@ class Estilos{
     return FittedBox(
       fit: BoxFit.contain,
       child: Text(
-
         titulo,style: TextStyle(
         color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFFFFFFFF) : const Color(0xFF000000),
         fontWeight: FontWeight.bold,
@@ -14,7 +13,19 @@ class Estilos{
       ),
       ),
     );
+  }
 
+  Widget estilo2(final BuildContext context,final String titulo){
+    return FittedBox(
+      fit: BoxFit.contain,
+      child: Text(
+        titulo,style: TextStyle(
+        color: Colors.white,
+        fontWeight: FontWeight.bold,
+        // fontSize:22,
+      ),
+      ),
+    );
   }
 
   Color background(final BuildContext context){

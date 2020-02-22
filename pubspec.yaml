@@ -28,10 +28,10 @@ dependencies:
   font_awesome_flutter: ^8.5.0
   image_picker: ^0.6.2+3
   firebase_auth: 0.15.3+1
-  google_sign_in: ^4.1.0
-  cloud_firestore: ^0.13.0+1
+  google_sign_in: ^4.1.1
+  cloud_firestore: ^0.13.3
   firebase_storage: ^3.1.1
-  shared_preferences: ^0.5.6
+  shared_preferences: ^0.5.6+1
   cached_network_image: ^1.1.3
   google_maps_flutter: ^0.5.11+1
   location: ^2.3.5
@@ -41,13 +41,21 @@ dependencies:
   flutter_google_places: ^0.2.3
   flutter_spinkit: ^4.1.0
   get_it: ^3.0.3
-  flutter_facebook_login: ^3.0.0
+  flutter_facebook_login: ^2.0.1
   http: ^0.12.0+2
   flutter_polyline_points: ^0.1.0
   carousel_slider: ^1.4.1
   flutter_launcher_icons: ^0.7.4
   flutter_rating_bar: ^3.0.1+1
   sliding_up_panel: ^1.0.0
+  share: ^0.6.3+5
+  expandable: ^4.1.2
+  lottie: ^0.2.0
+  toast: ^0.1.5
+  intro_slider: ^2.2.8
+  url_launcher: ^5.4.1
+  slide_to_confirm: ^0.0.6
+  double_back_to_close_app: ^0.1.2
 
 flutter_icons:
   android: true
@@ -73,11 +81,17 @@ flutter:
   assets:
     - assets/logo.png
     - assets/marker.png
-    - assets/loader_engrane.json
     - assets/taxo.png
     - assets/taxiApp.png
-    - assets/marker_car.png
     - assets/marker_taxi.png
+    - assets/daymode.json
+    - assets/nightmode.json
+    - assets/mexico.png
+    - assets/small-car.json
+    - assets/error.json
+    - assets/exitoso.json
+    - assets/loader_tak-si.gif
+    - assets/person.png
 
   fonts:
     - family: Bebas

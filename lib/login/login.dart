@@ -1,14 +1,18 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_auth_buttons/flutter_auth_buttons.dart';
+import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:provider/provider.dart';
-import 'package:taksi/providers/usuario.dart';
-import 'package:flutter_facebook_login/flutter_facebook_login.dart';
+import 'package:taksi/dialogs/dialogError.dart';
+import 'package:taksi/dialogs/loader.dart';
+import 'package:taksi/login/phone_login.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert' as JSON;
 
 final GoogleSignIn _googleSignIn = GoogleSignIn();
 final FirebaseAuth _auth = FirebaseAuth.instance;
+Map userProfile;
 
 class Log extends StatefulWidget {
   @override
@@ -16,24 +20,44 @@ class Log extends StatefulWidget {
 }
 
 class _LogState extends State<Log> {
+  @override
+  void initState() {
+    //currentUser();
+    super.initState();
+  }
+
   void facebookLogin() async {
+
     final facebookLogin = FacebookLogin();
-    final result = await facebookLogin.logIn(['email']);
+    final result = await facebookLogin.logInWithReadPermissions(['email']);
 
     switch (result.status) {
       case FacebookLoginStatus.loggedIn:
-        onLoginFb(result.accessToken.token);
+        final token = result.accessToken.token;
+        final graphResponse = await http.get('https://graph.facebook.com/v2.12/me?fields=name,picture.width(800).height(800),first_name,last_name,email&access_token=${token}');
+        final profile = JSON.jsonDecode(graphResponse.body);
+        userProfile = profile;
+        Navigator.of(context).pop();
+        Navigator.push(
+            context,
+            CupertinoPageRoute(
+                builder: (context) => PhoneSignInSection(userProfile["name"],
+                    userProfile["email"], userProfile["picture"]["data"]["url"], 'facebook')));
         break;
       case FacebookLoginStatus.cancelledByUser:
+        Navigator.of(context).pop();
         print("cancelo");
         break;
       case FacebookLoginStatus.error:
-        print("error");
+        Navigator.of(context).pop();
+        dialogError().Dialog_Error(context, 'Error al iniciar sesión',
+            'Ocurrio un error al iniciar sesión, por favor intentelo de nuevo', 'login');
+        print(result.errorMessage);
         break;
     }
   }
 
-  void onLoginFb(final token) async {
+  /*void onLoginFb(final token) async {
     final AuthCredential credential = FacebookAuthProvider.getCredential(
       accessToken: token,
     );
@@ -42,27 +66,45 @@ class _LogState extends State<Log> {
     Provider.of<Usuario>(context).correo = FirebaseUser.email;
     Provider.of<Usuario>(context).nombre = FirebaseUser.displayName;
     Provider.of<Usuario>(context).foto = FirebaseUser.photoUrl;
-  }
+    Provider.of<Usuario>(context).telefono = FirebaseUser.phoneNumber;
+  }*/
 
   Future<FirebaseUser> _handleSignIn() async {
-    final GoogleSignInAccount googleUser = await _googleSignIn.signIn();
+    final GoogleSignInAccount googleUser =
+        await _googleSignIn.signIn().catchError((error) {
+          Navigator.of(context).pop();
+          dialogError().Dialog_Error(context, 'Error al iniciar sesión',
+              'Ocurrio un error al iniciar sesión, por favor intentelo de nuevo', 'login');
+      print('error al iniciar sesion');
+    });
     final GoogleSignInAuthentication googleAuth =
         await googleUser.authentication;
 
-    final AuthCredential credential = GoogleAuthProvider.getCredential(
+    /*final AuthCredential credential = GoogleAuthProvider.getCredential(
       accessToken: googleAuth.accessToken,
       idToken: googleAuth.idToken,
-    );
+    );*/
+    if (googleUser.displayName != null) {
 
-    final FirebaseUser user =
-        (await _auth.signInWithCredential(credential)).user;
-    if (user.email != null) {
-      Provider.of<Usuario>(context).correo = user.email;
-      Provider.of<Usuario>(context).nombre = user.displayName;
-      Provider.of<Usuario>(context).foto = user.photoUrl;
+      print(googleUser.displayName);
+      Navigator.of(context).pop();
+      Navigator.push(
+          context,
+          CupertinoPageRoute(
+              builder: (context) => PhoneSignInSection(googleUser.displayName,
+                  googleUser.email, googleUser.photoUrl, 'google')));
     }
 
-    return user;
+    /*final FirebaseUser user =
+        (await _auth.signInWithCredential(credential)).user;
+    if (user.email != null) {
+      //Provider.of<Usuario>(context).correo = user.email;
+      //Provider.of<Usuario>(context).nombre = user.displayName;
+      //Provider.of<Usuario>(context).foto = user.photoUrl;
+      //Provider.of<Usuario>(context).telefono = user.phoneNumber;
+    }*/
+
+    //return user;
   }
 
   SingleChildScrollView loginUI() {
@@ -75,38 +117,30 @@ class _LogState extends State<Log> {
             child: Column(
               children: <Widget>[
                 const SizedBox(height: 15.0),
-                Image.asset("assets/logo.png", scale: 1.0),
-                const SizedBox(
-                  height: 10.0,
-                ),
-                FittedBox(
-                  fit: BoxFit.contain,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      FacebookSignInButton(
-                        onPressed: () {
-                          // call authentication logic
-                          facebookLogin();
-                        },
-                        borderRadius: 12.0,
-                        text: "Facebook",
-                      ),
-                      const SizedBox(
-                        width: 5.0,
-                      ),
-                      const SizedBox(
-                        width: 10.0,
-                      ),
-                      GoogleSignInButton(
-                        text: "Google",
-                        onPressed: () {
-                          _handleSignIn();
-                        },
-                        borderRadius: 12.0,
-                      ),
-                    ],
-                  ),
+                Image.asset("assets/logo.png", scale: 1.2),
+                const SizedBox(height: 10.0,),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    FacebookSignInButton(
+                      onPressed: () {
+                        // call authentication logic
+                        Loader().ShowCargando(context, 'Iniciando sesión con Facebook');
+                        facebookLogin();
+                      },
+                      borderRadius: 12.0,
+                      text: "Facebook",
+                    ),
+                    const SizedBox(height: 10.0,),
+                    GoogleSignInButton(
+                      text: "Google",
+                      onPressed: () {
+                        Loader().ShowCargando(context, 'Iniciando sesión con Google');
+                        _handleSignIn();
+                      },
+                      borderRadius: 12.0,
+                    ),
+                  ],
                 )
               ],
             ),
@@ -119,34 +153,29 @@ class _LogState extends State<Log> {
     );
   }
 
-  void currentUser() {
+  /*Future<void> currentUser() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
     _auth.currentUser().then((use) {
       if (use != null) {
-        if (use.email != null) {
-          Provider.of<Usuario>(context).correo = use.email;
-          Provider.of<Usuario>(context).nombre = use.displayName;
-          Provider.of<Usuario>(context).foto = use.photoUrl;
+        if (use.phoneNumber != null) {
+          Provider.of<Usuario>(context).telefono = use.phoneNumber;
+          Provider.of<Usuario>(context).correo = prefs.getString('correo');
+          Provider.of<Usuario>(context).nombre = prefs.getString('nombre');
+          Provider.of<Usuario>(context).foto = prefs.getString('foto');
+          Provider.of<Usuario>(context).inicio = prefs.getString('inicio');
         }
       }
     });
-  }
-
-  @override
-  void initState() {
-    currentUser();
-    super.initState();
-  }
+  }*/
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: Stack(
-          children: <Widget>[
-            fondo(),
-            Center(child: loginUI()),
-          ],
-        ),
+      body: Stack(
+        children: <Widget>[
+          fondo(),
+          Center(child: loginUI()),
+        ],
       ),
     );
   }
@@ -178,7 +207,7 @@ class fondo extends StatelessWidget {
             height: size.height * 0.6,
             decoration: BoxDecoration(
                 //color: Color(0xFFFA8072),
-                color: Colors.red[200],
+                color: Colors.blue[300],
                 borderRadius: BorderRadius.circular(600.0)),
           ),
         ),
@@ -192,7 +221,7 @@ class fondo extends StatelessWidget {
               height: size.height * 0.6,
               decoration: BoxDecoration(
                   // color:Color(0xFFFFD700),
-                  color: Colors.pink[300],
+                  color: Colors.blue,
                   borderRadius: BorderRadius.circular(1000.0)),
             ),
           ),
@@ -205,7 +234,19 @@ class fondo extends StatelessWidget {
             height: size.height * 0.6,
             decoration: BoxDecoration(
                 //color: Color(0xFFFFD700),
-                color: Colors.pink[300],
+                color: Colors.blue,
+                borderRadius: BorderRadius.circular(2000.0)),
+          ),
+        ),
+        Positioned(
+          bottom: -(size.width) * 0.7,
+          left: -(size.width) * 0.65,
+          child: Container(
+            width: size.height * 0.6,
+            height: size.height * 0.6,
+            decoration: BoxDecoration(
+                //color: Color(0xFFFFD700),
+                color: Colors.blue[300],
                 borderRadius: BorderRadius.circular(2000.0)),
           ),
         ),

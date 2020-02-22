@@ -152,9 +152,7 @@ class MisViajes extends StatelessWidget {
               );
             },
             separatorBuilder: (context, int d) {
-              return const SizedBox(
-                height: 15.0,
-              );
+              return const SizedBox(height: 15.0,);
             },
             itemCount: document.length)
         : Center(
@@ -164,14 +162,11 @@ class MisViajes extends StatelessWidget {
                 Image.asset(
                   "assets/taxo.png",
                   scale: 5,
-
                   color: Theme.of(context).brightness == Brightness.dark
                       ? Colors.white38
                       : Colors.black,
                 ),
-                const SizedBox(
-                  height: 40.0,
-                ),
+                const SizedBox(height: 40.0,),
                 Padding(
                   padding: const EdgeInsets.only(left: 10, right: 10),
                   child: Center(
@@ -181,16 +176,12 @@ class MisViajes extends StatelessWidget {
                     textAlign: TextAlign.center,
                   )),
                 ),
-                const SizedBox(
-                  height: 18.0,
-                ),
+                const SizedBox(height: 18.0,),
                 Text(
                   "¿Qué estás esperando?",
                   style: const TextStyle(fontSize: 25.0),
                 ),
-                const SizedBox(
-                  height: 30.0,
-                ),
+                const SizedBox(height: 30.0,),
                 SizedBox(
                   height: 50.0,
                   child: RaisedButton(
