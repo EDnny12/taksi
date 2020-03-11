@@ -47,10 +47,9 @@ class dialogError {
                           },
                           label: Text('Aceptar',
                               style:
-                              TextStyle(fontSize: 20, color: Colors.white)),
+                              TextStyle(fontSize: 20)),
                           icon: Icon(
                             Icons.tag_faces,
-                            color: Colors.white,
                           ),
                         ),
                       ],

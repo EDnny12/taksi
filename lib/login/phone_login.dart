@@ -5,14 +5,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taksi/dialogs/dialogError.dart';
-import 'package:taksi/dialogs/exitoso.dart';
 import 'package:taksi/login/ingresarCodigo.dart';
 import 'package:taksi/login/login.dart';
-import 'package:taksi/main.dart';
 import 'package:taksi/providers/estilos.dart';
 import 'package:taksi/providers/usuario.dart';
-import 'package:taksi/screen/main_screen.dart';
-import 'package:taksi/state/app_state.dart';
 
 final GlobalKey<ScaffoldState> scaffoldKey2 = GlobalKey<ScaffoldState>();
 final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -26,6 +22,7 @@ class PhoneSignInSection extends StatefulWidget {
 }
 
 class PhoneSignInSectionState extends State<PhoneSignInSection> {
+
   final TextEditingController _phoneNumberController = TextEditingController();
   final TextEditingController _smsController = TextEditingController();
 
@@ -69,7 +66,7 @@ class PhoneSignInSectionState extends State<PhoneSignInSection> {
                         ),
                         Text(
                           nombre,
-                          style: TextStyle(fontSize: 19, color: Colors.black),
+                          style: TextStyle(fontSize: 19),
                           textAlign: TextAlign.justify,
                         ),
                         SizedBox(
@@ -82,7 +79,7 @@ class PhoneSignInSectionState extends State<PhoneSignInSection> {
                         ),
                         Text(
                           correo,
-                          style: TextStyle(fontSize: 19, color: Colors.black),
+                          style: TextStyle(fontSize: 19),
                           textAlign: TextAlign.justify,
                         ),
                         SizedBox(
@@ -91,9 +88,9 @@ class PhoneSignInSectionState extends State<PhoneSignInSection> {
                         Container(
                           child: const Text(
                             'Ingrese su número de teléfono y recibirá un '
-                            'código de verificación',
+                                'código de verificación',
                             style:
-                                TextStyle(fontSize: 17, color: Colors.black54),
+                            TextStyle(fontSize: 17, color: Colors.black54),
                             textAlign: TextAlign.justify,
                           ),
                           alignment: Alignment.center,
@@ -130,7 +127,7 @@ class PhoneSignInSectionState extends State<PhoneSignInSection> {
                               } else {
                                 scaffoldKey2.currentState.showSnackBar(SnackBar(
                                     content:
-                                        Text('Ingrese su número de teléfono')));
+                                    Text('Ingrese su número de teléfono')));
                               }
                             },
                             child: const Text('Continuar'),
@@ -141,7 +138,7 @@ class PhoneSignInSectionState extends State<PhoneSignInSection> {
                         ),
                         Text(
                           'Al precionar continuar, confirmo que leí y estoy de acuerdo con los términos y condiones por el uso del servicio',
-                          style: TextStyle(fontSize: 15, color: Colors.black),
+                          style: TextStyle(fontSize: 15),
                           textAlign: TextAlign.justify,
                         ),
                         /*TextField(
@@ -201,15 +198,15 @@ class PhoneSignInSectionState extends State<PhoneSignInSection> {
               .collection('usuarios')
               .where('telefono', isEqualTo: '+52' + _phoneNumberController.text)
               .getDocuments().then((verificar) {
-                if (verificar.documents.isEmpty) {
-                  Firestore.instance.collection('usuarios').document().setData({
-                    'telefono': '+52' + _phoneNumberController.text,
-                    'codigos': FieldValue.arrayUnion([''])
-                  });
-                  print('datos creados');
-                } else {
-                  print('datos no creados');
-                }
+            if (verificar.documents.isEmpty) {
+              Firestore.instance.collection('usuarios').document().setData({
+                'telefono': '+52' + _phoneNumberController.text,
+                'codigos': FieldValue.arrayUnion([''])
+              });
+              print('datos creados');
+            } else {
+              print('datos no creados');
+            }
           });
 
           SharedPreferences prefs = await SharedPreferences.getInstance();

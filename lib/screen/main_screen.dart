@@ -7,12 +7,15 @@ import 'package:share/share.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taksi/dialogs/dialogError.dart';
 import 'package:taksi/dialogs/showPhoto.dart';
+import 'package:taksi/login/login.dart';
+import 'package:taksi/main.dart';
 import 'package:taksi/providers/dynamic_theme.dart';
 import 'package:taksi/providers/metodos.dart';
 import 'package:taksi/providers/usuario.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:taksi/screen/ayuda.dart';
+import 'package:taksi/screen/profile.dart';
 import 'package:taksi/screen/viajes.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:taksi/state/app_state.dart';
@@ -40,14 +43,6 @@ class _MenuState extends State<Menu> {
     super.initState();
   }
 
-  /*Future<void> inicializarUsuario(context) async {
-    SharedPreferences prefs = await  SharedPreferences.getInstance();
-    Provider.of<Usuario>(context).correo = prefs.getString('correo');
-    Provider.of<Usuario>(context).nombre = prefs.getString('nombre');
-    Provider.of<Usuario>(context).foto = prefs.getString('foto');
-    Provider.of<Usuario>(context).inicio = prefs.getString('inicio');
-  }*/
-
   void changeBrightness() {
     DynamicTheme.of(context).setBrightness(
         Theme.of(context).brightness == Brightness.dark
@@ -60,11 +55,8 @@ class _MenuState extends State<Menu> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: Provider.of<AppState>(context).scaffoldKey,
-      body: DoubleBackToCloseApp(
-        //onWillPop: onWillPop,
-        snackBar: SnackBar(
-          content: Text('Tap back again to leave'),
-        ),
+      body: WillPopScope(
+        onWillPop: onWillPop,
         child: SlidingUpPanel(
           panel: Provider.of<AppState>(context).floatingPanel(context),
           collapsed: Provider.of<AppState>(context).floatingCollapsed(context),
@@ -86,14 +78,16 @@ class _MenuState extends State<Menu> {
                         color: Theme.of(context).scaffoldBackgroundColor,
                         boxShadow: [
                           BoxShadow(
-                              color: Colors.grey,
+                              //color: Colors.grey,
+                              color: Theme.of(context).brightness == Brightness.dark ? Colors.white12 : Colors.grey,
                               offset: Offset(1.0, 5.0),
                               blurRadius: 10.0,
                               spreadRadius: 4)
                         ]),
                     child: CircleAvatar(
                       radius: 25.0,
-                      backgroundImage: NetworkImage(Provider.of<Usuario>(context).foto),
+                      backgroundImage:
+                          NetworkImage(Provider.of<Usuario>(context).foto),
                       backgroundColor: Colors.transparent,
                     ),
                   ),
@@ -156,7 +150,7 @@ class _MenuState extends State<Menu> {
               ),
               onTap: () {
                 Dialog_Photo()
-                    .dialogPhoto(context, Provider.of<Usuario>(context).foto);
+                    .dialogPhoto(context, Provider.of<Usuario>(context).foto, 'internet');
               },
             ),
             Padding(
@@ -187,7 +181,7 @@ class _MenuState extends State<Menu> {
             ),
             Divider(),
             ListTile(
-              leading: const Icon(Icons.local_taxi),
+              leading: const Icon(Icons.local_taxi, color: Colors.blue,),
               title: const Text("Mis viajes"),
               onTap: () {
                 Navigator.of(context).pop();
@@ -195,16 +189,18 @@ class _MenuState extends State<Menu> {
                     CupertinoPageRoute(builder: (context) => Viajes()));
               },
             ),
-            /*ListTile(
-              leading: const Icon(Icons.card_travel),
-              title: const Text("Viajes gratis"),
-              onTap: () {
-                Navigator.push(context,
-                    CupertinoPageRoute(builder: (context) => Gratis()));
-              },
-            ),*/
             ListTile(
-              leading: const Icon(Icons.share),
+              leading: const Icon(Icons.person, color: Colors.blue,),
+              title: const Text("Mi cuenta"),
+              onTap: () {
+                Navigator.push(
+                    context,
+                    CupertinoPageRoute(
+                        builder: (context) => UserProfilePage(context)));
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.share, color: Colors.blue,),
               title: const Text("Compartir"),
               onTap: () {
                 Navigator.of(context).pop();
@@ -214,7 +210,7 @@ class _MenuState extends State<Menu> {
               },
             ),
             ListTile(
-                leading: const Icon(Icons.help),
+                leading: const Icon(Icons.help, color: Colors.blue,),
                 title: const Text("Ayuda"),
                 onTap: () {
                   Navigator.push(context,
@@ -233,13 +229,17 @@ class _MenuState extends State<Menu> {
             ),
             Divider(),
             SwitchListTile(
-              onChanged: (sa) {
+              onChanged: (sa) async {
                 //Provider.of<Usuario>(context).dark = true;
-                DynamicTheme.of(context).setBrightness(
+                Provider.of<AppState>(context).changeMapMode(
                     Theme.of(context).brightness == Brightness.dark
                         ? Brightness.light
                         : Brightness.dark);
-                //Provider.of<AppState>(context).changeMapMode();
+
+                await DynamicTheme.of(context).setBrightness(
+                    Theme.of(context).brightness == Brightness.dark
+                        ? Brightness.light
+                        : Brightness.dark);
               },
               title: const Text("Tema oscuro"),
               subtitle:
@@ -249,7 +249,7 @@ class _MenuState extends State<Menu> {
                   : false,
             ),
             ListTile(
-              leading: const Icon(Icons.exit_to_app),
+              leading: const Icon(Icons.exit_to_app, color: Colors.blue,),
               title: const Text("Cerrar sesión"),
               onTap: () async {
                 Navigator.of(context).pop();
@@ -264,6 +264,8 @@ class _MenuState extends State<Menu> {
                 Provider.of<Usuario>(context).foto = null;
                 Provider.of<Usuario>(context).correo = null;
                 Provider.of<Usuario>(context).inicio = null;
+
+                Provider.of<AppState>(context).notify();
               },
             ),
             const SizedBox(
@@ -279,7 +281,7 @@ class _MenuState extends State<Menu> {
             ),
             Divider(),
             ListTile(
-              leading: Icon(Icons.developer_mode),
+              leading: Icon(Icons.developer_mode, color: Colors.blue,),
               title: Text("Tak-si"),
               subtitle: Text("Version 1.0.0 (Beta) © 2020 iSoft"),
             ),
@@ -294,7 +296,6 @@ class _MenuState extends State<Menu> {
     if (currentBackPressTime == null ||
         now.difference(currentBackPressTime) > Duration(seconds: 2)) {
       currentBackPressTime = now;
-      print('toast');
       Toast.show('Precione otra vez para salir', context,
           duration: Toast.LENGTH_SHORT, gravity: Toast.BOTTOM);
       //Fluttertoast.showToast(msg: 'salir');
@@ -377,20 +378,28 @@ class _MapState extends State<Map> {
               children: <Widget>[
                 Image.asset(
                   "assets/loader_tak-si.gif",
-                  //height: 125.0,
-                  //width: 125.0,
                 ),
                 Visibility(
                   visible: appState.locationServiceActive == false,
-                  child: Text(
-                    "Por favor active el gps o verifique su conexion a internet",
+                  child: Text(appState.msgUsuario, //"Por favor active el gps o verifique su conexion a internet"
                     style: TextStyle(
-                      color: Colors.black,
                       fontSize: 18.0,
                     ),
                     textAlign: TextAlign.center,
                   ),
-                )
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+                appState.msgUsuario == 'Permiso de ubicación no otorgado' ?
+                FlatButton(
+                  onPressed: () {
+                    appState.requestUbicationPermission(onPermissionDenied: () {
+                      print('periso denegado');
+                    });
+                  },
+                  child: new Text('Otorgar permiso'),
+                ) : SizedBox()
               ],
             ),
           )
@@ -415,17 +424,44 @@ class _MapState extends State<Map> {
               ),
               Positioned(
                 top: 95,
-                right: 5,
-                child: IconButton(
+                right: 8,
+                child: SizedBox.fromSize(
+                  size: Size(40, 40), // button width and height
+                  child: ClipOval(
+                    child: Material(
+                      color: Theme.of(context).brightness == Brightness.dark ? Colors.white24 : Colors.black26, // button color
+                      child: InkWell(
+                        splashColor: Colors.blue, // splash color
+                        onTap: () {
+                          Provider.of<AppState>(context).getUserLocation(context);
+                        }, // button pressed
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            Icon(
+                              Icons.my_location,
+                              color: Colors.white70,
+                              size: 30,
+                            ), // icon
+                            //Text("Call"), // text
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                /*IconButton(
+                  hoverColor: Colors.blue,
                   iconSize: 35,
                   icon: Icon(
                     Icons.my_location,
-                    color: Colors.blueGrey,
+                    color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFFFFFFFF) : const Color(0xFF000000),
                   ),
                   onPressed: () {
                     Provider.of<AppState>(context).getUserLocation(context);
                   },
-                ),
+                ),*/
               ),
               Provider.of<AppState>(context).showBtnPersistentDialog == false
                   ? Positioned(
@@ -444,8 +480,8 @@ class _MapState extends State<Map> {
                                     Theme.of(context).scaffoldBackgroundColor,
                                 boxShadow: [
                                   BoxShadow(
-                                      color: Colors.grey,
                                       offset: Offset(1.0, 5.0),
+                                      color: Theme.of(context).brightness == Brightness.dark ? Colors.white12 : Colors.grey,
                                       blurRadius: 10.0,
                                       spreadRadius: 3)
                                 ]),
@@ -479,23 +515,3 @@ class _MapState extends State<Map> {
           );
   }
 }
-
-/*Future<bool> onWillPop() async {
-  BuildContext context;
-  DateTime backbuttonpressedTime;
-  DateTime currentTime = DateTime.now();
-  //Statement 1 Or statement2
-  bool backButton = backbuttonpressedTime == null ||
-      currentTime.difference(backbuttonpressedTime) > Duration(seconds: 3);
-  if (backButton) {
-    backbuttonpressedTime = currentTime;
-    Toast.show('Precione otra vez para salir de la app', context,
-        duration: Toast.LENGTH_SHORT, gravity: Toast.BOTTOM);
-    */ /*Fluttertoast.showToast(
-        msg: "Double Click to exit app",
-        backgroundColor: Colors.black,
-        textColor: Colors.white);*/ /*
-    return false;
-  }
-  return true;
-}*/

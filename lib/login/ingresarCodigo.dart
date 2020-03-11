@@ -9,11 +9,9 @@ import 'package:taksi/login/login.dart';
 import 'package:taksi/providers/estilos.dart';
 import 'package:taksi/providers/usuario.dart';
 
-
 final GlobalKey<ScaffoldState> scaffoldKey2 = GlobalKey<ScaffoldState>();
 
 class Codigo extends StatefulWidget {
-
   FirebaseAuth auth;
   String correo;
   String nombre;
@@ -21,14 +19,15 @@ class Codigo extends StatefulWidget {
   String inicio;
   String telefono;
   String verificationId;
-  Codigo(this.auth, this.verificationId, this.correo, this.nombre, this.foto, this.inicio, this.telefono);
+  Codigo(this.auth, this.verificationId, this.correo, this.nombre, this.foto,
+      this.inicio, this.telefono);
 
   @override
-  _CodigoState createState() => _CodigoState(auth,verificationId, correo, nombre, foto, inicio, telefono);
+  _CodigoState createState() => _CodigoState(
+      auth, verificationId, correo, nombre, foto, inicio, telefono);
 }
 
 class _CodigoState extends State<Codigo> {
-
   final TextEditingController _codigoController = TextEditingController();
 
   FirebaseAuth _auth;
@@ -38,7 +37,8 @@ class _CodigoState extends State<Codigo> {
   String _inicio;
   String _telefono;
   String _verificationId;
-  _CodigoState(this._auth, this._verificationId, this._correo, this._nombre, this._foto, this._inicio, this._telefono);
+  _CodigoState(this._auth, this._verificationId, this._correo, this._nombre,
+      this._foto, this._inicio, this._telefono);
 
   @override
   Widget build(BuildContext context) {
@@ -64,14 +64,19 @@ class _CodigoState extends State<Codigo> {
                     padding: const EdgeInsets.all(12),
                     child: Column(
                       children: <Widget>[
-                        const SizedBox(height: 10.0,),
+                        const SizedBox(
+                          height: 10.0,
+                        ),
                         Image.asset("assets/logo.png", scale: 1.2),
-                        const SizedBox(height: 10.0,),
+                        const SizedBox(
+                          height: 10.0,
+                        ),
                         TextField(
                           keyboardType: TextInputType.number,
                           controller: _codigoController,
                           maxLength: 6,
-                          style: TextStyle(fontWeight: FontWeight.w400, fontSize: 20),
+                          style: TextStyle(
+                              fontWeight: FontWeight.w400, fontSize: 20),
                           decoration: InputDecoration(
                               labelText: 'Código de verificación'),
                         ),
@@ -82,17 +87,18 @@ class _CodigoState extends State<Codigo> {
                             onPressed: () async {
                               if (_codigoController.text.isNotEmpty) {
                                 if (_codigoController.text.length < 6) {
-                                  scaffoldKey2.currentState.showSnackBar(SnackBar(
-                                      content:
-                                      Text('Ingrese un código valido')));
+                                  scaffoldKey2.currentState.showSnackBar(
+                                      SnackBar(
+                                          content: Text(
+                                              'Ingrese un código valido')));
                                 } else {
                                   _signInWithPhoneNumber();
                                 }
                                 //_verifyPhoneNumber();
                               } else {
                                 scaffoldKey2.currentState.showSnackBar(SnackBar(
-                                    content:
-                                    Text('Ingrese el código de verificación')));
+                                    content: Text(
+                                        'Ingrese el código de verificación')));
                               }
                             },
                             child: const Text('Verificar'),
@@ -110,7 +116,6 @@ class _CodigoState extends State<Codigo> {
     );
   }
 
-
   void _signInWithPhoneNumber() async {
     final AuthCredential credential = PhoneAuthProvider.getCredential(
       verificationId: _verificationId,
@@ -126,7 +131,8 @@ class _CodigoState extends State<Codigo> {
         Firestore.instance
             .collection('usuarios')
             .where('telefono', isEqualTo: _telefono)
-            .getDocuments().then((verificar) {
+            .getDocuments()
+            .then((verificar) {
           if (verificar.documents.isEmpty) {
             Firestore.instance.collection('usuarios').document().setData({
               'telefono': _telefono,
@@ -137,7 +143,6 @@ class _CodigoState extends State<Codigo> {
             print('datos no creados');
           }
         });
-
 
         SharedPreferences prefs = await SharedPreferences.getInstance();
         prefs.setString('correo', _correo);
@@ -150,8 +155,8 @@ class _CodigoState extends State<Codigo> {
         //_message = 'Successfully signed in, uid: ' + user.uid;
       } else {
         print('ocurrio un error');
-        dialogError().Dialog_Error(
-            context, 'Lo sentimos', 'Algo salio mal, por favor intentelo mas tarde', 'login');
+        dialogError().Dialog_Error(context, 'Lo sentimos',
+            'Algo salio mal, por favor intentelo mas tarde', 'login');
         //_message = 'Sign in failed';
       }
     });

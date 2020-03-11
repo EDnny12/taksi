@@ -99,6 +99,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.1.3"
+  dots_indicator:
+    dependency: transitive
+    description:
+      name: dots_indicator
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.1.0"
   double_back_to_close_app:
     dependency: "direct main"
     description:
@@ -106,13 +113,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.1.2"
-  expandable:
+  fab_circular_menu:
     dependency: "direct main"
     description:
-      name: expandable
+      name: fab_circular_menu
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "4.1.2"
+    version: "0.1.5"
   firebase:
     dependency: transitive
     description:
@@ -331,13 +338,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.6.2+3"
-  intro_slider:
+  introduction_screen:
     dependency: "direct main"
     description:
-      name: intro_slider
+      name: introduction_screen
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.2.8"
+    version: "1.0.8"
   js:
     dependency: transitive
     description:
@@ -408,6 +415,20 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.8.0+1"
+  permission_handler:
+    dependency: "direct main"
+    description:
+      name: permission_handler
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "4.4.0"
+  permission_handler_platform_interface:
+    dependency: transitive
+    description:
+      name: permission_handler_platform_interface
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.0"
   petitparser:
     dependency: transitive
     description:

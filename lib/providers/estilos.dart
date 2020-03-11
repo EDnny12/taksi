@@ -9,7 +9,7 @@ class Estilos{
         titulo,style: TextStyle(
         color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFFFFFFFF) : const Color(0xFF000000),
         fontWeight: FontWeight.bold,
-        // fontSize:22,
+        fontSize:16,
       ),
       ),
     );

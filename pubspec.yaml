@@ -49,13 +49,14 @@ dependencies:
   flutter_rating_bar: ^3.0.1+1
   sliding_up_panel: ^1.0.0
   share: ^0.6.3+5
-  expandable: ^4.1.2
   lottie: ^0.2.0
   toast: ^0.1.5
-  intro_slider: ^2.2.8
   url_launcher: ^5.4.1
   slide_to_confirm: ^0.0.6
   double_back_to_close_app: ^0.1.2
+  permission_handler: ^4.4.0
+  introduction_screen: ^1.0.8
+  fab_circular_menu: ^0.1.5
 
 flutter_icons:
   android: true
@@ -92,6 +93,14 @@ flutter:
     - assets/exitoso.json
     - assets/loader_tak-si.gif
     - assets/person.png
+    - assets/img_ayuda.jpg
+    - assets/mapa.png
+    - assets/destino.png
+    - assets/tap.png
+    - assets/detalles.png
+    - assets/sitios.png
+    - assets/aceptado.png
+    - assets/iniciado.png
 
   fonts:
     - family: Bebas

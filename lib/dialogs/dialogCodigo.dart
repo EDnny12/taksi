@@ -57,7 +57,7 @@ class dialogCodigo {
                       FlatButton(
                         child: new Text(
                           'Aceptar',
-                          style: TextStyle(color: Colors.black, fontSize: 15),
+                          style: TextStyle(fontSize: 15),
                         ),
                         onPressed: () {
                           if (cupon.text.isNotEmpty) {

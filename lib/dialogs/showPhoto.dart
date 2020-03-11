@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 
 class Dialog_Photo {
-
-  dialogPhoto(context, String photo) {
+  dialogPhoto(context, String photo, String tipo) {
     showGeneralDialog(
         context: context,
         barrierColor: Colors.black.withOpacity(0.5),
@@ -19,8 +18,11 @@ class Dialog_Photo {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20)),
                 content: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Image.network(photo),
+                  padding: const EdgeInsets.all(0),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: tipo == 'internet' ? Image.network(photo) : Image.asset(photo),
+                  ),
                 ),
               ),
             ),

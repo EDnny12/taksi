@@ -7,6 +7,7 @@ class dialogSolicitar {
 
   final GlobalKey<ScaffoldState> scaffoldKey;
   String ciudadUsuario;
+  String estado;
   dialogSolicitar(this.ciudadUsuario, this.scaffoldKey);
 
 
@@ -55,8 +56,6 @@ class dialogSolicitar {
                         child: RaisedButton.icon(
                           onPressed: () {
                             insertSolicitud(context);
-                            Navigator.of(context).pop();
-                            showSnackBar('Tu solicitud ha sido enviada!');
                           },
                           label: Text('Solicitar', style: TextStyle(fontSize: 20)),
                           icon: Icon(Icons.transit_enterexit),
@@ -80,6 +79,11 @@ class dialogSolicitar {
     await Firestore.instance.collection("solicitudes").document().setData({
       'usuario': Provider.of<Usuario>(context).nombre,
       'ciudad': ciudadUsuario,
+      'fecha': DateTime.now(),
+      'estado': Provider.of<Usuario>(context).estado,
+    }).whenComplete(() {
+      Navigator.of(context).pop();
+      showSnackBar('Tu solicitud ha sido enviada!');
     });
   }
 

@@ -40,7 +40,7 @@ class Alerts {
                               Text(
                                 'Reportar un problema',
                                 style: TextStyle(
-                                    fontSize: 22, color: Colors.white),
+                                    fontSize: 22),
                                 //textAlign: TextAlign.left,
                               ),
                             ],
@@ -90,7 +90,7 @@ class Alerts {
                               child: Text(
                                 'Enviar',
                                 style: TextStyle(
-                                    fontSize: 18.0, color: Colors.white),
+                                    fontSize: 18.0),
                               ),
                             ),
                           ],
@@ -116,11 +116,13 @@ class Alerts {
       'nombre': nombre,
       'correo': correo,
       'ciudad': ciudad,
-      'estado': estado
+      'estado': estado,
+      'fecha': DateTime.now(),
 
+    }).whenComplete((){
+      Navigator.of(context).pop();
+      Dialog_Exitoso().DialogExitoso(context, 'Reporte enviado',
+          'Gracias por enviarnos su reporte! sera tomado en cuenta para mejorar el servicio');
     });
-    Navigator.of(context).pop();
-    Dialog_Exitoso().DialogExitoso(context, 'Reporte enviado',
-        'Gracias por enviarnos su reporte! sera tomado en cuenta para mejorar el servicio');
   }
 }

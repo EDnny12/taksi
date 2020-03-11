@@ -64,10 +64,11 @@ class MyApp extends StatelessWidget {
                           Provider.of<Usuario>(context).inicio = prefs.getString('inicio');*/
                         }
 
-                        return prefs.getString('nombre') != null
+                        print('nombre: ' + Provider.of<Usuario>(context).nombre.toString());
+                        return Provider.of<Usuario>(context).nombre.toString() != 'null' //prefs.getString('nombre')
                             ? MultiProvider(
                                 providers: [
-                                  ChangeNotifierProvider(create: (context) => AppState(context)),
+                                  ChangeNotifierProvider(create: (context) => AppState(context, theme.brightness)),
                                 ],
                                 child: Menu(),
                               )

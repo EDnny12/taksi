@@ -47,7 +47,7 @@ class UserProfilePage extends StatelessWidget {
   Widget _buildFullName() {
     TextStyle _nameTextStyle = TextStyle(
       fontFamily: 'Roboto',
-      color: Colors.black,
+      color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black,
       fontSize: 28.0,
       fontWeight: FontWeight.w700,
     );
@@ -75,7 +75,7 @@ class UserProfilePage extends StatelessWidget {
         _status,
         style: TextStyle(
           fontFamily: 'Spectral',
-          color: Colors.black,
+          color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black,
           fontSize: 20.0,
           fontWeight: FontWeight.w300,
         ),

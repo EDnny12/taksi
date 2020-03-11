@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:taksi/providers/estilos.dart';
 import 'package:taksi/widgets/listaViajes.dart';
@@ -39,7 +40,7 @@ class _ViajesState extends State<Viajes> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        elevation: 0.0,
+        elevation: 1.0,
         actions: <Widget>[
           PopupMenuButton<CustomPopupMenu>(
             icon: Icon(Icons.reorder),
@@ -50,7 +51,10 @@ class _ViajesState extends State<Viajes> {
                 return PopupMenuItem<CustomPopupMenu>(
                   value: choice,
                   child: ListTile(
-                      leading: Icon(choice.icon), title: Text(choice.title)),
+                      leading: Icon(choice.icon),
+                      title: Text(
+                        choice.title,
+                      )),
                 );
               }).toList();
             },

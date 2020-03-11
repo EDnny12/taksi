@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
-import 'package:provider/provider.dart';
-import 'package:taksi/dialogs/loader.dart';
-import 'package:taksi/providers/usuario.dart';
-import 'package:taksi/state/app_state.dart';
 
 class Dialog_Exitoso {
 
@@ -47,10 +43,9 @@ class Dialog_Exitoso {
                           },
                           label: Text('Aceptar',
                               style:
-                                  TextStyle(fontSize: 20, color: Colors.white)),
+                                  TextStyle(fontSize: 20)),
                           icon: Icon(
                             Icons.tag_faces,
-                            color: Colors.white,
                           ),
                         ),
                       ],
