@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
-class Dialog_Exitoso {
+class DialogExitoso {
 
-  DialogExitoso(context2, String titulo, String mensaje) {
+  dialogExitoso(context2, String titulo, String mensaje) {
     showGeneralDialog(
         barrierColor: Colors.black.withOpacity(0.5),
         transitionBuilder: (context, a1, a2, widget) {
@@ -38,6 +38,7 @@ class Dialog_Exitoso {
                         SizedBox(height: 15,),
                         RaisedButton.icon(
                           color: Colors.blue,
+                          textColor: Colors.white,
                           onPressed: () {
                             Navigator.of(context).pop();
                           },

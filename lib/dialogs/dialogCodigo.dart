@@ -1,11 +1,10 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:taksi/dialogs/loader.dart';
 import 'package:taksi/state/app_state.dart';
 import 'package:toast/toast.dart';
 
-class dialogCodigo {
+class DialogCodigo {
 
   TextEditingController cupon = TextEditingController();
 
@@ -41,7 +40,7 @@ class dialogCodigo {
                       ),
                       SizedBox(height: 20.0),
                       Text(
-                        "Cuando tengas un cupón de descuento ingresalo para obtener fabulosos descuentos en tus viajes",
+                        "Cuando tengas un cupón de descuento ingrésalo para obtener fabulosos descuentos en tus viajes",
                         textAlign: TextAlign.justify,
                       ),
                       SizedBox(height: 20.0),
@@ -62,7 +61,7 @@ class dialogCodigo {
                         onPressed: () {
                           if (cupon.text.isNotEmpty) {
                             Navigator.of(context).pop();
-                            Loader().ShowCargando(context2, 'Validando su código');
+                            Loader().showCargando(context2, 'Validando su código');
                             Provider.of<AppState>(context2).verifyCodigo(context2, cupon.text);
                           } else {
                             Toast.show('Ingrese un código', context2,

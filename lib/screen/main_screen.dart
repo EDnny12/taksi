@@ -1,4 +1,3 @@
-import 'package:double_back_to_close_app/double_back_to_close_app.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -7,10 +6,9 @@ import 'package:share/share.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taksi/dialogs/dialogError.dart';
 import 'package:taksi/dialogs/showPhoto.dart';
-import 'package:taksi/login/login.dart';
-import 'package:taksi/main.dart';
 import 'package:taksi/providers/dynamic_theme.dart';
 import 'package:taksi/providers/metodos.dart';
+import 'package:taksi/providers/publicidad.dart';
 import 'package:taksi/providers/usuario.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
@@ -20,6 +18,7 @@ import 'package:taksi/screen/viajes.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:taksi/state/app_state.dart';
 import 'package:toast/toast.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class Menu extends StatefulWidget {
   @override
@@ -67,42 +66,43 @@ class _MenuState extends State<Menu> {
             alignment: Alignment.topLeft,
             children: <Widget>[
               Map(),
-              Positioned(
-                top: 28,
-                left: 3,
-                child: IconButton(
-                  iconSize: 50,
-                  icon: Container(
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(40.0),
-                        color: Theme.of(context).scaffoldBackgroundColor,
-                        boxShadow: [
-                          BoxShadow(
-                              //color: Colors.grey,
-                              color: Theme.of(context).brightness == Brightness.dark ? Colors.white12 : Colors.grey,
-                              offset: Offset(1.0, 5.0),
-                              blurRadius: 10.0,
-                              spreadRadius: 4)
-                        ]),
-                    child: CircleAvatar(
-                      radius: 25.0,
-                      backgroundImage:
-                          NetworkImage(Provider.of<Usuario>(context).foto),
-                      backgroundColor: Colors.transparent,
-                    ),
-                  ),
-                  onPressed: () {
-                    /*Navigator.push(
-                        context,
-                        CupertinoPageRoute(
-                            builder: (context) => Tutorial()));*/
-                    Provider.of<AppState>(context)
-                        .scaffoldKey
-                        .currentState
-                        .openDrawer();
-                  },
-                ),
-              ),
+              Provider.of<AppState>(context).showAppBar == false
+                  ? Positioned(
+                      top: 28,
+                      left: 3,
+                      child: IconButton(
+                        iconSize: 50,
+                        icon: Container(
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(40.0),
+                              color: Theme.of(context).scaffoldBackgroundColor,
+                              boxShadow: [
+                                BoxShadow(
+                                    //color: Colors.grey,
+                                    color: Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? Colors.white12
+                                        : Colors.grey,
+                                    offset: Offset(1.0, 5.0),
+                                    blurRadius: 10.0,
+                                    spreadRadius: 4)
+                              ]),
+                          child: CircleAvatar(
+                            radius: 25.0,
+                            backgroundImage: NetworkImage(
+                                Provider.of<Usuario>(context).foto),
+                            backgroundColor: Colors.transparent,
+                          ),
+                        ),
+                        onPressed: () {
+                          Provider.of<AppState>(context)
+                              .scaffoldKey
+                              .currentState
+                              .openDrawer();
+                        },
+                      ),
+                    )
+                  : const SizedBox(),
             ],
           ),
         ),
@@ -113,7 +113,7 @@ class _MenuState extends State<Menu> {
               onPressed: () {
                 if (Provider.of<AppState>(context).descuentoAplicado) {
                   print('tiene descuento');
-                  dialogError().Dialog_Error(
+                  DialogError().dialogError(
                       context,
                       'Restablecer valores',
                       'Si restablece los valores, el codigo de descuento que ha ingresado se perdera, ¿Desea continuar?',
@@ -149,8 +149,8 @@ class _MenuState extends State<Menu> {
                 backgroundColor: Colors.transparent,
               ),
               onTap: () {
-                Dialog_Photo()
-                    .dialogPhoto(context, Provider.of<Usuario>(context).foto, 'internet');
+                DialogPhoto().dialogPhoto(
+                    context, Provider.of<Usuario>(context).foto, 'internet');
               },
             ),
             Padding(
@@ -181,26 +181,34 @@ class _MenuState extends State<Menu> {
             ),
             Divider(),
             ListTile(
-              leading: const Icon(Icons.local_taxi, color: Colors.blue,),
+              leading: const Icon(
+                Icons.local_taxi,
+                color: Colors.lightBlue,
+              ),
               title: const Text("Mis viajes"),
               onTap: () {
-                Navigator.of(context).pop();
                 Navigator.push(context,
                     CupertinoPageRoute(builder: (context) => Viajes()));
               },
             ),
             ListTile(
-              leading: const Icon(Icons.person, color: Colors.blue,),
+              leading: const Icon(
+                Icons.person,
+                color: Colors.lightBlue,
+              ),
               title: const Text("Mi cuenta"),
               onTap: () {
                 Navigator.push(
                     context,
                     CupertinoPageRoute(
-                        builder: (context) => UserProfilePage(context)));
+                        builder: (context) => UserProfilePage()));
               },
             ),
             ListTile(
-              leading: const Icon(Icons.share, color: Colors.blue,),
+              leading: const Icon(
+                Icons.share,
+                color: Colors.lightBlue,
+              ),
               title: const Text("Compartir"),
               onTap: () {
                 Navigator.of(context).pop();
@@ -210,7 +218,10 @@ class _MenuState extends State<Menu> {
               },
             ),
             ListTile(
-                leading: const Icon(Icons.help, color: Colors.blue,),
+                leading: const Icon(
+                  Icons.help,
+                  color: Colors.lightBlue,
+                ),
                 title: const Text("Ayuda"),
                 onTap: () {
                   Navigator.push(context,
@@ -249,7 +260,10 @@ class _MenuState extends State<Menu> {
                   : false,
             ),
             ListTile(
-              leading: const Icon(Icons.exit_to_app, color: Colors.blue,),
+              leading: const Icon(
+                Icons.exit_to_app,
+                color: Colors.lightBlue,
+              ),
               title: const Text("Cerrar sesión"),
               onTap: () async {
                 Navigator.of(context).pop();
@@ -264,8 +278,6 @@ class _MenuState extends State<Menu> {
                 Provider.of<Usuario>(context).foto = null;
                 Provider.of<Usuario>(context).correo = null;
                 Provider.of<Usuario>(context).inicio = null;
-
-                Provider.of<AppState>(context).notify();
               },
             ),
             const SizedBox(
@@ -281,9 +293,20 @@ class _MenuState extends State<Menu> {
             ),
             Divider(),
             ListTile(
-              leading: Icon(Icons.developer_mode, color: Colors.blue,),
+              leading: Icon(
+                Icons.developer_mode,
+                color: Colors.lightBlue,
+              ),
               title: Text("Tak-si"),
               subtitle: Text("Version 1.0.0 (Beta) © 2020 iSoft"),
+              onTap: () async {
+                if (await canLaunch('https://www.google.com.mx/')) {
+                  await launch('https://www.google.com.mx/');
+                } else {
+                  Toast.show('Ocurrio un error, intentelo de nuevo', context,
+                      duration: Toast.LENGTH_SHORT, gravity: Toast.CENTER);
+                }
+              },
             ),
           ],
         ),
@@ -335,6 +358,7 @@ class Calificacion extends StatelessWidget {
     } else {
       final datos = document[0].data["calificacion"];
       String califi = (datos[0] / datos[1]).toStringAsFixed(1);
+      print('calificacion: ' + califi);
       return GestureDetector(
           onTap: () {
             showGeneralDialog(
@@ -370,6 +394,7 @@ class Map extends StatefulWidget {
 class _MapState extends State<Map> {
   @override
   Widget build(BuildContext context) {
+    double mitad = MediaQuery.of(context).size.height / 2;
     final appState = Provider.of<AppState>(context);
     return appState.initialPosition == null
         ? Container(
@@ -381,7 +406,9 @@ class _MapState extends State<Map> {
                 ),
                 Visibility(
                   visible: appState.locationServiceActive == false,
-                  child: Text(appState.msgUsuario, //"Por favor active el gps o verifique su conexion a internet"
+                  child: Text(
+                    appState
+                        .msgUsuario, //"Por favor active el gps o verifique su conexion a internet"
                     style: TextStyle(
                       fontSize: 18.0,
                     ),
@@ -391,15 +418,17 @@ class _MapState extends State<Map> {
                 SizedBox(
                   height: 10,
                 ),
-                appState.msgUsuario == 'Permiso de ubicación no otorgado' ?
-                FlatButton(
-                  onPressed: () {
-                    appState.requestUbicationPermission(onPermissionDenied: () {
-                      print('periso denegado');
-                    });
-                  },
-                  child: new Text('Otorgar permiso'),
-                ) : SizedBox()
+                appState.msgUsuario == 'Permiso de ubicación no otorgado'
+                    ? FlatButton(
+                        onPressed: () {
+                          appState.requestUbicationPermission(
+                              onPermissionDenied: () {
+                            print('periso denegado');
+                          });
+                        },
+                        child: new Text('Otorgar permiso'),
+                      )
+                    : SizedBox()
               ],
             ),
           )
@@ -417,8 +446,8 @@ class _MapState extends State<Map> {
                 rotateGesturesEnabled: true,
                 markers: appState.markers,
                 onCameraMove: appState.onCameraMove,
-                onLongPress: (LatLng) {
-                  appState.getDestinationLongPress(LatLng, context);
+                onLongPress: (latLng) {
+                  appState.getDestinationLongPress(latLng, context);
                 },
                 polylines: appState.polyLines,
               ),
@@ -429,11 +458,14 @@ class _MapState extends State<Map> {
                   size: Size(40, 40), // button width and height
                   child: ClipOval(
                     child: Material(
-                      color: Theme.of(context).brightness == Brightness.dark ? Colors.white24 : Colors.black26, // button color
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white24
+                          : Colors.black26, // button color
                       child: InkWell(
                         splashColor: Colors.blue, // splash color
                         onTap: () {
-                          Provider.of<AppState>(context).getUserLocation(context);
+                          Provider.of<AppState>(context)
+                              .getUserLocation(context);
                         }, // button pressed
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -450,18 +482,6 @@ class _MapState extends State<Map> {
                     ),
                   ),
                 ),
-
-                /*IconButton(
-                  hoverColor: Colors.blue,
-                  iconSize: 35,
-                  icon: Icon(
-                    Icons.my_location,
-                    color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFFFFFFFF) : const Color(0xFF000000),
-                  ),
-                  onPressed: () {
-                    Provider.of<AppState>(context).getUserLocation(context);
-                  },
-                ),*/
               ),
               Provider.of<AppState>(context).showBtnPersistentDialog == false
                   ? Positioned(
@@ -481,7 +501,10 @@ class _MapState extends State<Map> {
                                 boxShadow: [
                                   BoxShadow(
                                       offset: Offset(1.0, 5.0),
-                                      color: Theme.of(context).brightness == Brightness.dark ? Colors.white12 : Colors.grey,
+                                      color: Theme.of(context).brightness ==
+                                              Brightness.dark
+                                          ? Colors.white12
+                                          : Colors.grey,
                                       blurRadius: 10.0,
                                       spreadRadius: 3)
                                 ]),
@@ -510,7 +533,206 @@ class _MapState extends State<Map> {
                         ],
                       ),
                     )
-                  : const SizedBox()
+                  : const SizedBox(),
+              Provider.of<AppState>(context).showbtnNext
+                  ? Positioned(
+                      bottom: 5,
+                      right: 10,
+                      left: 10,
+                      child: Container(
+                        margin: const EdgeInsets.only(
+                            top: 5, left: 5, right: 5, bottom: 5),
+                        height: 75,
+                        width: MediaQuery.of(context).size.width,
+                        decoration: BoxDecoration(
+                            //color: Colors.white,
+                            color:
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.black87
+                                    : Colors.white,
+                            borderRadius: BorderRadius.all(Radius.circular(15)),
+                            boxShadow: [
+                              BoxShadow(
+                                  blurRadius: 10,
+                                  color: Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? Colors.white12
+                                      : Colors.grey,
+                                  //color: Colors.grey,
+                                  spreadRadius: 3)
+                            ]),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            SizedBox(
+                              width: MediaQuery.of(context).size.width,
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.only(left: 30, right: 30),
+                                child: RaisedButton.icon(
+                                  //splashColor: Colors.black87,
+                                  color: Colors.lightBlue,
+                                  label: Text(
+                                      !Provider.of<AppState>(context)
+                                              .showBtnPersistentDialog
+                                          ? 'Continuar'
+                                          : 'Confirmar',
+                                      style: TextStyle(
+                                          fontSize: 20, color: Colors.white)),
+                                  icon: Icon(
+                                    Icons.navigate_next,
+                                    color: Colors.white,
+                                  ),
+                                  onPressed: () {
+                                    if (!Provider.of<AppState>(context)
+                                        .showBtnPersistentDialog) {
+                                      Provider.of<AppState>(context)
+                                          .selectPuntoPartida(context);
+                                    } else {
+                                      Provider.of<AppState>(context)
+                                          .btnContinuarPuntoPartida(context);
+                                    }
+                                  },
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(20))),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ) /* SizedBox(
+                        height: 38,
+                        child: RaisedButton.icon(
+                          splashColor: Colors.black87,
+                          color: Colors.lightBlue,
+                          label: Text('Continuar',
+                              style:
+                                  TextStyle(fontSize: 20, color: Colors.white)),
+                          icon: Icon(
+                            Icons.navigate_next,
+                            color: Colors.white,
+                          ),
+                          onPressed: () {
+                            if (!Provider.of<AppState>(context)
+                                .showBtnPersistentDialog) {
+                              Provider.of<AppState>(context)
+                                  .selectPuntoPartida(context);
+                            } else {
+                              Provider.of<AppState>(context)
+                                  .btnContinuarPuntoPartida(context);
+                            }
+                          },
+                          shape: RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(20))),
+                        ),
+                      ), */
+                      )
+                  : const SizedBox(),
+              Provider.of<AppState>(context).showAppBar
+                  ? Positioned(
+                      child: Container(
+                      alignment: Alignment.center,
+                      height: 75,
+                      color: Colors.lightBlue,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          SizedBox(
+                            height: 20,
+                          ),
+                          Text(
+                            'Punto de partida',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ))
+                  : const SizedBox(),
+              Provider.of<AppState>(context).showInfoMarker
+                  ? Positioned(
+                      top: mitad,
+                      left: 20,
+                      right: 20,
+                      child: Container(
+                          width: MediaQuery.of(context).size.width,
+                          decoration: BoxDecoration(
+                              //color: Colors.white,
+                              color: Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? Colors.black87
+                                  : Colors.white,
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(15)),
+                              boxShadow: [
+                                BoxShadow(
+                                    blurRadius: 10,
+                                    color: Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? Colors.white12
+                                        : Colors.grey,
+                                    //color: Colors.grey,
+                                    spreadRadius: 3)
+                              ]),
+                          child: Column(
+                            children: <Widget>[
+                              SizedBox(
+                                height: 5,
+                              ),
+                              Text(
+                                Provider.of<Publicidad>(context).empresa,
+                                style: TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.w700),
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: <Widget>[
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                        left: 10, right: 10),
+                                    child: CircleAvatar(
+                                      radius: 15,
+                                      backgroundImage: NetworkImage(
+                                          Provider.of<Publicidad>(context)
+                                              .marker),
+                                      backgroundColor: Colors.transparent,
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(
+                                          left: 10, right: 10),
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: <Widget>[
+                                          Text(
+                                            Provider.of<Publicidad>(context)
+                                                .descripcion,
+                                            textAlign: TextAlign.justify,
+                                            style: TextStyle(fontSize: 13),
+                                          ),
+                                          Text(
+                                            Provider.of<Publicidad>(context)
+                                                .telefono,
+                                            style: TextStyle(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w500),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          )))
+                  : SizedBox()
             ],
           );
   }

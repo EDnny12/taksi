@@ -71,14 +71,12 @@ class _AyudaState extends State<Ayuda> {
                 title: Text("Opciones de pago"),
                 leading: Icon(
                   Icons.payment,
-                  color: Colors.blue,
+                  color: Colors.lightBlue,
                 ),
                 subtitle: Text("Métodos de pago existentes y su utilización"),
                 onTap: () {
-                  Navigator.push(
-                      context,
-                      CupertinoPageRoute(
-                          builder: (context) => Opciones_pago()));
+                  Navigator.push(context,
+                      CupertinoPageRoute(builder: (context) => OpcionesPago()));
                 },
               ),
               SizedBox(
@@ -88,29 +86,32 @@ class _AyudaState extends State<Ayuda> {
                 title: Text("Tutorial"),
                 leading: Icon(
                   Icons.slideshow,
-                  color: Colors.blue,
+                  color: Colors.lightBlue,
                 ),
-                subtitle: Text("Tutorial para ver el proceso de solicitar un servicio"),
+                subtitle: Text(
+                    "Tutorial para ver el proceso de solicitar un servicio"),
                 onTap: () {
                   Navigator.push(
                       context,
                       CupertinoPageRoute(
-                          builder: (context) => Tutorial(Provider.of<Usuario>(context).nombre)));//Provider.of<Usuario>(context).nombre
+                          builder: (context) => Tutorial(Provider.of<Usuario>(
+                                  context)
+                              .nombre))); //Provider.of<Usuario>(context).nombre
                 },
               ),
               SizedBox(
                 height: 5,
               ),
               ListTile(
-                title: Text("Reportar un problema"),
+                title: Text("Reportar un problema",),
                 leading: Icon(
                   Icons.report_problem,
-                  color: Colors.blue,
+                  color: Colors.lightBlue,
                 ),
                 subtitle: Text(
                     "Inconvenientes en algún viaje o enviar comentarios para mejorar el servicio"),
                 onTap: () {
-                  Alerts().Dialog_reportarProblema(context);
+                  Alerts().dialogReportarProblema(context);
                 },
               ),
               SizedBox(
@@ -120,14 +121,14 @@ class _AyudaState extends State<Ayuda> {
                 title: Text("Preguntas frecuentes"),
                 leading: Icon(
                   Icons.question_answer,
-                  color: Colors.blue,
+                  color: Colors.lightBlue,
                 ),
                 subtitle: Text('Resuelve tus dudas'),
                 onTap: () {
                   Navigator.push(
                       context,
                       CupertinoPageRoute(
-                          builder: (context) => Preguntas_frecuentes()));
+                          builder: (context) => PreguntasFrecuentes()));
                 },
               ),
             ],

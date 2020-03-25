@@ -4,8 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:taksi/state/app_state.dart';
 
 
-class dialogError {
-  Dialog_Error(context2, String titulo, String mensaje, String ubicacion) {
+class DialogError {
+  dialogError(context2, String titulo, String mensaje, String ubicacion) {
     showGeneralDialog(
         barrierColor: Colors.black.withOpacity(0.5),
         transitionBuilder: (context, a1, a2, widget) {
@@ -39,6 +39,7 @@ class dialogError {
                         SizedBox(height: 15,),
                         RaisedButton.icon(
                           color: Colors.redAccent,
+                          textColor: Colors.white,
                           onPressed: () {
                             if (ubicacion == 'menu') {
                               Provider.of<AppState>(context2).restablecerVariables(context2, 'menu');

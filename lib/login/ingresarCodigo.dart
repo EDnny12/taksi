@@ -51,7 +51,7 @@ class _CodigoState extends State<Codigo> {
       ),
       body: Stack(
         children: <Widget>[
-          fondo(),
+          Fondo(),
           Center(
             child: SingleChildScrollView(
               child: Padding(
@@ -127,7 +127,6 @@ class _CodigoState extends State<Codigo> {
     assert(user.uid == currentUser.uid);
     setState(() async {
       if (user != null) {
-        print('bienvenido');
         Firestore.instance
             .collection('usuarios')
             .where('telefono', isEqualTo: _telefono)
@@ -155,8 +154,8 @@ class _CodigoState extends State<Codigo> {
         //_message = 'Successfully signed in, uid: ' + user.uid;
       } else {
         print('ocurrio un error');
-        dialogError().Dialog_Error(context, 'Lo sentimos',
-            'Algo salio mal, por favor intentelo mas tarde', 'login');
+        DialogError().dialogError(context, 'Lo sentimos',
+            'Algo salio mal, por favor intentelo más tarde', 'login');
         //_message = 'Sign in failed';
       }
     });

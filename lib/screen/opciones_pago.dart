@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:taksi/providers/estilos.dart';
 
-class Opciones_pago extends StatefulWidget {
+class OpcionesPago extends StatefulWidget {
   @override
-  _Opciones_pagoState createState() => _Opciones_pagoState();
+  _OpcionesPagoState createState() => _OpcionesPagoState();
 }
 
-class _Opciones_pagoState extends State<Opciones_pago> {
+class _OpcionesPagoState extends State<OpcionesPago> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,10 +26,6 @@ class _Opciones_pagoState extends State<Opciones_pago> {
                         color: Colors.white,
                         fontSize: 16.0,
                       )),
-                  /*background: Image.network(
-                      "https://images.pexels.com/photos/396547/pexels-photo-396547.jpeg?auto=compress&cs=tinysrgb&h=350",
-                      fit: BoxFit.cover,
-                    )*/
                 ),
               ),
               SliverPersistentHeader(
@@ -79,7 +74,7 @@ class _Opciones_pagoState extends State<Opciones_pago> {
                   ),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Text('El valor del cupon puede variar y al utilizarlo en la aplicación se aplica un descuento '
+                    child: Text('El valor del cupón puede variar y al utilizarlo en la aplicación se aplica un descuento '
                         'al precio total del servicio',
                       textAlign: TextAlign.justify,style: TextStyle(
                         fontSize: 16.0,
@@ -87,17 +82,17 @@ class _Opciones_pagoState extends State<Opciones_pago> {
                   ),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Text('El cupon se debe ingresar antes de seleccionar el sitio de taxi, '
-                        'si ha ingresado un cupon y cancela el viaje, el cupon se toma como ya utilizado y no '
-                        'podra volver a utilizarlo ',
+                    child: Text('El cupón se debe ingresar antes de seleccionar el sitio de taxi, '
+                        'si ha ingresado un cupón y cancela el viaje, el cupón se toma como ya utilizado y no '
+                        'podrá volver a utilizarlo ',
                       textAlign: TextAlign.justify,style: TextStyle(
                         fontSize: 16.0,
                       ),),
                   ),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Text('Los cupones son distribuidos en la pagina oficial de Tak-si en Facebook.'
-                        ' Te recomendamos que sigas la pagina y estes al pediente de nuestras publicaciones',
+                    child: Text('Los cupones son distribuidos en la página oficial de Tak-si en Facebook.'
+                        ' Te recomendamos que sigas la página y estés al pendiente de nuestras publicaciones',
                       textAlign: TextAlign.justify,style: TextStyle(
                         fontSize: 16.0,
                       ),),

@@ -11,7 +11,6 @@ import 'package:http/http.dart' as http;
 import 'dart:convert' as JSON;
 
 final GoogleSignIn _googleSignIn = GoogleSignIn();
-final FirebaseAuth _auth = FirebaseAuth.instance;
 Map userProfile;
 
 class Log extends StatefulWidget {
@@ -27,22 +26,25 @@ class _LogState extends State<Log> {
   }
 
   void facebookLogin() async {
-
     final facebookLogin = FacebookLogin();
     final result = await facebookLogin.logInWithReadPermissions(['email']);
 
     switch (result.status) {
       case FacebookLoginStatus.loggedIn:
         final token = result.accessToken.token;
-        final graphResponse = await http.get('https://graph.facebook.com/v2.12/me?fields=name,picture.width(800).height(800),first_name,last_name,email&access_token=${token}');
+        final graphResponse = await http.get(
+            'https://graph.facebook.com/v2.12/me?fields=name,picture.width(800).height(800),first_name,last_name,email&access_token=$token');
         final profile = JSON.jsonDecode(graphResponse.body);
         userProfile = profile;
         Navigator.of(context).pop();
         Navigator.push(
             context,
             CupertinoPageRoute(
-                builder: (context) => PhoneSignInSection(userProfile["name"],
-                    userProfile["email"], userProfile["picture"]["data"]["url"], 'facebook')));
+                builder: (context) => PhoneSignInSection(
+                    userProfile["name"],
+                    userProfile["email"],
+                    userProfile["picture"]["data"]["url"],
+                    'facebook')));
         break;
       case FacebookLoginStatus.cancelledByUser:
         Navigator.of(context).pop();
@@ -50,8 +52,11 @@ class _LogState extends State<Log> {
         break;
       case FacebookLoginStatus.error:
         Navigator.of(context).pop();
-        dialogError().Dialog_Error(context, 'Error al iniciar sesión',
-            'Ocurrio un error al iniciar sesión, por favor intentelo de nuevo', 'login');
+        DialogError().dialogError(
+            context,
+            'Error al iniciar sesión',
+            'Ocurrió un error al iniciar sesión, por favor inténtelo de nuevo',
+            'login');
         print(result.errorMessage);
         break;
     }
@@ -72,20 +77,22 @@ class _LogState extends State<Log> {
   Future<FirebaseUser> _handleSignIn() async {
     final GoogleSignInAccount googleUser =
         await _googleSignIn.signIn().catchError((error) {
-          Navigator.of(context).pop();
-          dialogError().Dialog_Error(context, 'Error al iniciar sesión',
-              'Ocurrio un error al iniciar sesión, por favor intentelo de nuevo', 'login');
+      Navigator.of(context).pop();
+      DialogError().dialogError(
+          context,
+          'Error al iniciar sesión',
+          'Ocurrio un error al iniciar sesión, por favor intentelo de nuevo',
+          'login');
       print('error al iniciar sesion');
     });
-    final GoogleSignInAuthentication googleAuth =
+    /*final GoogleSignInAuthentication googleAuth =
         await googleUser.authentication;
 
-    /*final AuthCredential credential = GoogleAuthProvider.getCredential(
+    final AuthCredential credential = GoogleAuthProvider.getCredential(
       accessToken: googleAuth.accessToken,
       idToken: googleAuth.idToken,
     );*/
     if (googleUser.displayName != null) {
-
       print(googleUser.displayName);
       Navigator.of(context).pop();
       Navigator.push(
@@ -118,27 +125,44 @@ class _LogState extends State<Log> {
               children: <Widget>[
                 const SizedBox(height: 15.0),
                 Image.asset("assets/logo.png", scale: 1.2),
-                const SizedBox(height: 10.0,),
+                const SizedBox(
+                  height: 10.0,
+                ),
                 Column(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
-                    FacebookSignInButton(
-                      onPressed: () {
-                        // call authentication logic
-                        Loader().ShowCargando(context, 'Iniciando sesión con Facebook');
-                        facebookLogin();
-                      },
-                      borderRadius: 12.0,
-                      text: "Facebook",
+                    Padding(
+                      padding: const EdgeInsets.only(left: 40, right: 40),
+                      child: SizedBox(
+                        width: MediaQuery.of(context).size.width,
+                        child: FacebookSignInButton(
+                          onPressed: () {
+                            Loader().showCargando(
+                                context, 'Iniciando sesión con Facebook');
+                            facebookLogin();
+                          },
+                          borderRadius: 12.0,
+                          text: "Facebook",
+                        ),
+                      ),
                     ),
-                    const SizedBox(height: 10.0,),
-                    GoogleSignInButton(
-                      text: "Google",
-                      onPressed: () {
-                        Loader().ShowCargando(context, 'Iniciando sesión con Google');
-                        _handleSignIn();
-                      },
-                      borderRadius: 12.0,
+                    const SizedBox(
+                      height: 10.0,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 40, right: 40),
+                      child: SizedBox(
+                        width: MediaQuery.of(context).size.width,
+                        child: GoogleSignInButton(
+                          text: "Google",
+                          onPressed: () {
+                            Loader().showCargando(
+                                context, 'Iniciando sesión con Google');
+                            _handleSignIn();
+                          },
+                          borderRadius: 12.0,
+                        ),
+                      ),
                     ),
                   ],
                 )
@@ -173,7 +197,7 @@ class _LogState extends State<Log> {
     return Scaffold(
       body: Stack(
         children: <Widget>[
-          fondo(),
+          Fondo(),
           Center(child: loginUI()),
         ],
       ),
@@ -181,7 +205,7 @@ class _LogState extends State<Log> {
   }
 }
 
-class gradiente extends StatelessWidget {
+class Gradiente extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -194,7 +218,7 @@ class gradiente extends StatelessWidget {
   }
 }
 
-class fondo extends StatelessWidget {
+class Fondo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -206,7 +230,6 @@ class fondo extends StatelessWidget {
             width: size.height * 0.6,
             height: size.height * 0.6,
             decoration: BoxDecoration(
-                //color: Color(0xFFFA8072),
                 color: Colors.blue[300],
                 borderRadius: BorderRadius.circular(600.0)),
           ),
@@ -220,7 +243,6 @@ class fondo extends StatelessWidget {
               width: size.height * 0.6,
               height: size.height * 0.6,
               decoration: BoxDecoration(
-                  // color:Color(0xFFFFD700),
                   color: Colors.blue,
                   borderRadius: BorderRadius.circular(1000.0)),
             ),
@@ -233,7 +255,6 @@ class fondo extends StatelessWidget {
             width: size.height * 0.6,
             height: size.height * 0.6,
             decoration: BoxDecoration(
-                //color: Color(0xFFFFD700),
                 color: Colors.blue,
                 borderRadius: BorderRadius.circular(2000.0)),
           ),
@@ -245,7 +266,6 @@ class fondo extends StatelessWidget {
             width: size.height * 0.6,
             height: size.height * 0.6,
             decoration: BoxDecoration(
-                //color: Color(0xFFFFD700),
                 color: Colors.blue[300],
                 borderRadius: BorderRadius.circular(2000.0)),
           ),

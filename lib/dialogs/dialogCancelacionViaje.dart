@@ -5,9 +5,9 @@ import 'package:taksi/dialogs/loader.dart';
 import 'package:taksi/state/app_state.dart';
 
 
-class dialogCancelacionViaje {
+class DialogCancelacionViaje {
 
-  CancelacionViaje(context2, String titulo, String mensaje, String tipo) {
+  cancelacionViaje(context2, String titulo, String mensaje, String tipo) {
     showGeneralDialog(
         barrierColor: Colors.black.withOpacity(0.5),
         transitionBuilder: (context, a1, a2, widget) {
@@ -43,9 +43,10 @@ class dialogCancelacionViaje {
                           SizedBox(height: 15,),
                           RaisedButton.icon(
                             color: Colors.redAccent,
+                            textColor: Colors.white,
                             onPressed: () {
                               Navigator.of(context).pop();
-                              Loader().ShowCargando(context2, 'Cancelando su viaje!');
+                              Loader().showCargando(context2, 'Cancelando su viaje!');
                               if (tipo == 'usuario') {
                                 Provider.of<AppState>(context2).cancelarViaje(context2);
                               } else {

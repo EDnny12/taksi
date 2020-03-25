@@ -4,11 +4,12 @@ import 'package:provider/provider.dart';
 import 'package:taksi/dialogs/exitoso.dart';
 import 'package:taksi/dialogs/loader.dart';
 import 'package:taksi/providers/usuario.dart';
+import 'package:toast/toast.dart';
 
 class Alerts {
   TextEditingController reportessage = TextEditingController();
 
-  Dialog_reportarProblema(context2) {
+  dialogReportarProblema(context2) {
     showGeneralDialog(
         barrierColor: Colors.black.withOpacity(0.5),
         transitionBuilder: (context, a1, a2, widget) {
@@ -39,9 +40,7 @@ class Alerts {
                             children: <Widget>[
                               Text(
                                 'Reportar un problema',
-                                style: TextStyle(
-                                    fontSize: 22),
-                                //textAlign: TextAlign.left,
+                                style: TextStyle(fontSize: 22, color: Colors.white),
                               ),
                             ],
                           ),
@@ -57,7 +56,7 @@ class Alerts {
                             decoration: InputDecoration(
                               labelText: 'Ingrese el mensaje',
                               suffixIcon:
-                              Icon(Icons.sentiment_very_dissatisfied),
+                                  Icon(Icons.sentiment_very_dissatisfied),
                             ),
                           ),
                         ),
@@ -70,27 +69,33 @@ class Alerts {
                           children: <Widget>[
                             RaisedButton(
                               color: Colors.blue,
+                              textColor: Colors.white,
                               onPressed: () {
-                                Navigator.of(context2).pop();
-                                Loader().ShowCargando(
-                                    context2, 'Enviando su reporte');
-                                print(reportessage.text);
-                                print(Provider.of<Usuario>(context).nombre);
-                                print(Provider.of<Usuario>(context).correo);
-                                print(DateTime.now());
-                                print(Provider.of<Usuario>(context).ciudad);
-                                print(Provider.of<Usuario>(context).estado);
-                                InsertReporte(context2,
-                                    reportessage.text,
-                                    Provider.of<Usuario>(context).nombre,
-                                    Provider.of<Usuario>(context).correo,
-                                    Provider.of<Usuario>(context).ciudad,
-                                    Provider.of<Usuario>(context).estado);
+                                if (reportessage.text.isEmpty) {
+                                  Toast.show('Ingrese el mensaje', context,
+                                      duration: Toast.LENGTH_SHORT, gravity: Toast.CENTER);
+                                } else {
+                                  Navigator.of(context2).pop();
+                                  Loader().showCargando(
+                                      context2, 'Enviando su reporte');
+                                  print(reportessage.text);
+                                  print(Provider.of<Usuario>(context).nombre);
+                                  print(Provider.of<Usuario>(context).correo);
+                                  print(DateTime.now());
+                                  print(Provider.of<Usuario>(context).ciudad);
+                                  print(Provider.of<Usuario>(context).estado);
+                                  insertReporte(
+                                      context2,
+                                      reportessage.text,
+                                      Provider.of<Usuario>(context).nombre,
+                                      Provider.of<Usuario>(context).correo,
+                                      Provider.of<Usuario>(context).ciudad,
+                                      Provider.of<Usuario>(context).estado);
+                                }
                               },
                               child: Text(
                                 'Enviar',
-                                style: TextStyle(
-                                    fontSize: 18.0),
+                                style: TextStyle(fontSize: 18.0),
                               ),
                             ),
                           ],
@@ -108,20 +113,21 @@ class Alerts {
         pageBuilder: (context, animation1, animation2) {});
   }
 
-  void InsertReporte(context, String mensaje, String nombre, String correo,
+  void insertReporte(context, String mensaje, String nombre, String correo,
       String ciudad, String estado) async {
-
-    await Firestore.instance.collection('reportes_usuarios').document().setData({
+    await Firestore.instance
+        .collection('reportes_usuarios')
+        .document()
+        .setData({
       'reporte': mensaje,
       'nombre': nombre,
       'correo': correo,
       'ciudad': ciudad,
       'estado': estado,
       'fecha': DateTime.now(),
-
-    }).whenComplete((){
+    }).whenComplete(() {
       Navigator.of(context).pop();
-      Dialog_Exitoso().DialogExitoso(context, 'Reporte enviado',
+      DialogExitoso().dialogExitoso(context, 'Reporte enviado',
           'Gracias por enviarnos su reporte! sera tomado en cuenta para mejorar el servicio');
     });
   }

@@ -1,14 +1,18 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taksi/dialogs/dialogError.dart';
+import 'package:taksi/dialogs/loader.dart';
 import 'package:taksi/login/ingresarCodigo.dart';
 import 'package:taksi/login/login.dart';
 import 'package:taksi/providers/estilos.dart';
 import 'package:taksi/providers/usuario.dart';
+import 'package:toast/toast.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 final GlobalKey<ScaffoldState> scaffoldKey2 = GlobalKey<ScaffoldState>();
 final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -22,7 +26,6 @@ class PhoneSignInSection extends StatefulWidget {
 }
 
 class PhoneSignInSectionState extends State<PhoneSignInSection> {
-
   final TextEditingController _phoneNumberController = TextEditingController();
   final TextEditingController _smsController = TextEditingController();
 
@@ -30,6 +33,31 @@ class PhoneSignInSectionState extends State<PhoneSignInSection> {
   String _verificationId;
   String nombre, correo, foto, inicio;
   PhoneSignInSectionState(this.nombre, this.correo, this.foto, this.inicio);
+  TapGestureRecognizer _terminosyCondiciones, _politicasDePrivacidad;
+
+  @override
+  void initState() {
+    super.initState();
+    _terminosyCondiciones = TapGestureRecognizer()
+      ..onTap = () {
+        print('terminos y condiciones');
+        showWebView('https://pub.dev/packages/easy_web_view#-readme-tab-');
+      };
+    _politicasDePrivacidad = TapGestureRecognizer()
+      ..onTap = () {
+        print('politicas de privacidad');
+        showWebView('https://pub.dev/packages?q=web+view');
+      };
+  }
+
+  showWebView(String link) async {
+    if (await canLaunch(link)) {
+      await launch(link);
+    } else {
+      Toast.show('Ocurrio un error, intentelo de nuevo', context,
+          duration: Toast.LENGTH_SHORT, gravity: Toast.CENTER);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +70,7 @@ class PhoneSignInSectionState extends State<PhoneSignInSection> {
       ),
       body: Stack(
         children: <Widget>[
-          fondo(),
+          Fondo(),
           Center(
             child: SingleChildScrollView(
               child: Padding(
@@ -56,9 +84,7 @@ class PhoneSignInSectionState extends State<PhoneSignInSection> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        SizedBox(
-                          height: 40,
-                        ),
+                        SizedBox(height: 40,),
                         Text(
                           'Nombre',
                           style: TextStyle(fontSize: 17, color: Colors.black54),
@@ -69,9 +95,7 @@ class PhoneSignInSectionState extends State<PhoneSignInSection> {
                           style: TextStyle(fontSize: 19),
                           textAlign: TextAlign.justify,
                         ),
-                        SizedBox(
-                          height: 40,
-                        ),
+                        SizedBox(height: 40,),
                         Text(
                           'Correo',
                           style: TextStyle(fontSize: 17, color: Colors.black54),
@@ -82,15 +106,13 @@ class PhoneSignInSectionState extends State<PhoneSignInSection> {
                           style: TextStyle(fontSize: 19),
                           textAlign: TextAlign.justify,
                         ),
-                        SizedBox(
-                          height: 40,
-                        ),
+                        SizedBox(height: 40,),
                         Container(
                           child: const Text(
                             'Ingrese su número de teléfono y recibirá un '
-                                'código de verificación',
+                            'código de verificación',
                             style:
-                            TextStyle(fontSize: 17, color: Colors.black54),
+                                TextStyle(fontSize: 17, color: Colors.black54),
                             textAlign: TextAlign.justify,
                           ),
                           alignment: Alignment.center,
@@ -104,7 +126,6 @@ class PhoneSignInSectionState extends State<PhoneSignInSection> {
                           decoration: InputDecoration(
                               prefixText: "+52 ",
                               icon: Image.asset(
-                                //prefixIcon
                                 "assets/mexico.png",
                                 height: 30,
                                 scale: 2,
@@ -122,39 +143,51 @@ class PhoneSignInSectionState extends State<PhoneSignInSection> {
                                       content: Text(
                                           'Ingrese un número de teléfono valido')));
                                 } else {
+                                  Loader().showCargando(
+                                      context, 'Enviando código!');
                                   _verifyPhoneNumber();
                                 }
                               } else {
                                 scaffoldKey2.currentState.showSnackBar(SnackBar(
                                     content:
-                                    Text('Ingrese su número de teléfono')));
+                                        Text('Ingrese su número de teléfono')));
                               }
                             },
                             child: const Text('Continuar'),
                           ),
                         ),
-                        SizedBox(
-                          height: 20,
-                        ),
-                        Text(
-                          'Al precionar continuar, confirmo que leí y estoy de acuerdo con los términos y condiones por el uso del servicio',
-                          style: TextStyle(fontSize: 15),
-                          textAlign: TextAlign.justify,
-                        ),
-                        /*TextField(
-                          controller: _smsController,
-                          decoration:
-                              const InputDecoration(labelText: 'Codigo de verificación'),
-                        ),
-                        Container(
-                          alignment: Alignment.center,
-                          child: RaisedButton(
-                            onPressed: () async {
-                              _signInWithPhoneNumber();
-                            },
-                            child: const Text('iniciar sesion'),
-                          ),
-                        ),*/
+                        SizedBox(height: 20,),
+                        RichText(
+                            textAlign: TextAlign.justify,
+                            text: TextSpan(children: <TextSpan>[
+                              TextSpan(
+                                  text:
+                                      'Al presionar continuar, confirmo que leí y estoy de acuerdo con ',
+                                  style: TextStyle(
+                                      fontSize: 15, color: Colors.black)),
+                              TextSpan(
+                                  text: 'los términos y condiciones',
+                                  recognizer: _terminosyCondiciones,
+                                  style: TextStyle(
+                                      fontSize: 15,
+                                      color: Colors.lightBlue,
+                                      decoration: TextDecoration.underline)),
+                              TextSpan(
+                                  text: ' y ',
+                                  style: TextStyle(
+                                      fontSize: 15, color: Colors.black)),
+                              TextSpan(
+                                  text: 'políticas de privacidad',
+                                  recognizer: _politicasDePrivacidad,
+                                  style: TextStyle(
+                                      fontSize: 15,
+                                      color: Colors.lightBlue,
+                                      decoration: TextDecoration.underline)),
+                              TextSpan(
+                                  text: ' por el uso del servicio.',
+                                  style: TextStyle(
+                                      fontSize: 15, color: Colors.black)),
+                            ])),
                         Container(
                           alignment: Alignment.center,
                           child: Text(
@@ -176,13 +209,14 @@ class PhoneSignInSectionState extends State<PhoneSignInSection> {
 
   // Example code of how to verify phone number
   void _verifyPhoneNumber() async {
-    var firebaseAuth = await FirebaseAuth.instance;
+    var firebaseAuth = FirebaseAuth.instance;
     setState(() {
       _message = '';
     });
     final PhoneVerificationCompleted verificationCompleted =
         (AuthCredential phoneAuthCredential) {
       setState(() {
+        Loader().showCargando(context, 'Verificando código');
         _message = 'Código de verificación de recuperación automática';
       });
 
@@ -191,13 +225,15 @@ class PhoneSignInSectionState extends State<PhoneSignInSection> {
           .then((AuthResult value) async {
         if (value.user != null) {
           setState(() {
+            Navigator.of(context).pop();
             _message = 'Bienvenido a Tak-si';
           });
 
           Firestore.instance
               .collection('usuarios')
               .where('telefono', isEqualTo: '+52' + _phoneNumberController.text)
-              .getDocuments().then((verificar) {
+              .getDocuments()
+              .then((verificar) {
             if (verificar.documents.isEmpty) {
               Firestore.instance.collection('usuarios').document().setData({
                 'telefono': '+52' + _phoneNumberController.text,
@@ -219,14 +255,16 @@ class PhoneSignInSectionState extends State<PhoneSignInSection> {
           onAuthenticationSuccessful();
         } else {
           setState(() {
-            dialogError().Dialog_Error(
+            Navigator.of(context).pop();
+            DialogError().dialogError(
                 context, 'Verifique su código', 'Código invalido', 'login');
             _message = '';
           });
         }
       }).catchError((error) {
         setState(() {
-          dialogError().Dialog_Error(context, 'Lo sentimos',
+          Navigator.of(context).pop();
+          DialogError().dialogError(context, 'Lo sentimos',
               'Algo salió mal, por favor intente más tarde', 'login');
           _message = '';
         });
@@ -236,16 +274,17 @@ class PhoneSignInSectionState extends State<PhoneSignInSection> {
     final PhoneVerificationFailed verificationFailed =
         (AuthException authException) {
       setState(() {
+        Navigator.of(context).pop();
         if (authException.message.contains('not authorized')) {
-          dialogError().Dialog_Error(context, 'Lo sentimos',
-              'Algo salió mal, por favor intente mas tarde', 'login');
+          DialogError().dialogError(context, 'Lo sentimos',
+              'Algo salió mal, por favor intente más tarde', 'login');
           _message = '';
         } else if (authException.message.contains('Network')) {
-          dialogError().Dialog_Error(context, 'Lo sentimos',
+          DialogError().dialogError(context, 'Lo sentimos',
               'Verifique su conexión a Internet e intente nuevamente', 'login');
           _message = '';
         } else {
-          dialogError().Dialog_Error(context, 'Lo sentimos',
+          DialogError().dialogError(context, 'Lo sentimos',
               'Algo salió mal, por favor intente más tarde', 'login');
           _message = '';
         }
@@ -260,6 +299,7 @@ class PhoneSignInSectionState extends State<PhoneSignInSection> {
             _phoneNumberController.text.toString()),
       ));
       _verificationId = verificationId;
+      Navigator.of(context).pop();
       Navigator.push(
           context,
           CupertinoPageRoute(

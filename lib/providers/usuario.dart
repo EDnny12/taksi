@@ -1,14 +1,14 @@
 import 'package:flutter/cupertino.dart';
 
 class Usuario with ChangeNotifier {
-  String _correo = null;
-  String _nombre = null;
-  String _foto = null;
-  String _calificacion = null;
-  String _telefono = null;
-  String _ciudad = null;
-  String _estado = null;
-  String _inicio = null;
+  String _correo;
+  String _nombre;
+  String _foto;
+  String _calificacion;
+  String _telefono;
+  String _ciudad;
+  String _estado;
+  String _inicio;
   bool darkMode = false;
 
 

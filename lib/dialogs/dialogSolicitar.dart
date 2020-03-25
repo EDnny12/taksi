@@ -3,15 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:taksi/providers/usuario.dart';
 
-class dialogSolicitar {
+class DialogSolicitar {
 
   final GlobalKey<ScaffoldState> scaffoldKey;
   String ciudadUsuario;
   String estado;
-  dialogSolicitar(this.ciudadUsuario, this.scaffoldKey);
+  DialogSolicitar(this.ciudadUsuario, this.scaffoldKey);
 
 
-  Dialog_solicitar(context) {
+  dialogSolicitar(context) {
     showGeneralDialog(
         context: context,
         barrierColor: Colors.black.withOpacity(0.5),
@@ -42,7 +42,7 @@ class dialogSolicitar {
                       ),
                       Center(
                         child: Text(
-                          'Tak-si aun no se encuentra en tu ciudad',
+                          'Tak-si aún no se encuentra en tu ciudad',
                           style: TextStyle(fontSize: 20),
                           textAlign: TextAlign.center,
                         ),

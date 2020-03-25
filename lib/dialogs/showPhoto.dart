@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class Dialog_Photo {
+class DialogPhoto {
   dialogPhoto(context, String photo, String tipo) {
     showGeneralDialog(
         context: context,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taksi/providers/dynamic_theme.dart';
+import 'package:taksi/providers/publicidad.dart';
 import 'package:taksi/providers/usuario.dart';
 import 'package:taksi/state/app_state.dart';
 import 'package:taksi/screen/main_screen.dart';
@@ -13,7 +14,6 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-
   SharedPreferences prefs;
   String valor;
 
@@ -25,15 +25,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     verificarSesion().then((value) {
       valor = value;
-
     });
 
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => Usuario()),
+        ChangeNotifierProvider(create: (context) => Publicidad()),
       ],
       child: DynamicTheme(
           defaultBrightness: Brightness.light,
@@ -52,10 +51,11 @@ class MyApp extends StatelessWidget {
                 theme: theme,
                 home: FutureBuilder(
                     future: verificarSesion(),
-                    builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-
+                    builder:
+                        (BuildContext context, AsyncSnapshot<String> snapshot) {
                       if (snapshot.hasData) {
-                        if (prefs.getString('nombre') != null) { //valor != 'null'
+                        if (prefs.getString('nombre') != null) {
+                          //valor != 'null'
                           inicializarUsuario(context);
                           /*Provider.of<Usuario>(context).correo = prefs.getString('correo');
                           Provider.of<Usuario>(context).nombre = prefs.getString('nombre');
@@ -64,11 +64,17 @@ class MyApp extends StatelessWidget {
                           Provider.of<Usuario>(context).inicio = prefs.getString('inicio');*/
                         }
 
-                        print('nombre: ' + Provider.of<Usuario>(context).nombre.toString());
-                        return Provider.of<Usuario>(context).nombre.toString() != 'null' //prefs.getString('nombre')
+                        print('nombre: ' +
+                            Provider.of<Usuario>(context).nombre.toString());
+                        return Provider.of<Usuario>(context)
+                                    .nombre
+                                    .toString() !=
+                                'null' //prefs.getString('nombre')
                             ? MultiProvider(
                                 providers: [
-                                  ChangeNotifierProvider(create: (context) => AppState(context, theme.brightness)),
+                                  ChangeNotifierProvider(
+                                      create: (context) =>
+                                          AppState(context, theme.brightness)),
                                 ],
                                 child: Menu(),
                               )
