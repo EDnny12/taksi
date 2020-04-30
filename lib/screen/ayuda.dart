@@ -7,6 +7,7 @@ import 'package:taksi/screen/calificaciones.dart';
 import 'package:taksi/screen/opciones_pago.dart';
 import 'package:taksi/screen/preguntas_frecuentes.dart';
 import 'package:taksi/widgets/tutorial.dart';
+import 'package:taksi/widgets/tutorialSaveUbication.dart';
 
 class Ayuda extends StatefulWidget {
   @override
@@ -83,6 +84,24 @@ class _AyudaState extends State<Ayuda> {
                 height: 5,
               ),
               ListTile(
+                title: Text("Guardar ubicaciones"),
+                leading: Icon(
+                  Icons.add_location,
+                  color: Colors.lightBlue,
+                ),
+                subtitle:
+                    Text('Funcionamiento del sistema de guardar una ubicación'),
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      CupertinoPageRoute(
+                          builder: (context) => TutorialSaveUbication(Provider.of<Usuario>(context, listen: true).nombre)));
+                },
+              ),
+              SizedBox(
+                height: 5,
+              ),
+              ListTile(
                 title: Text("Tutorial"),
                 leading: Icon(
                   Icons.slideshow,
@@ -94,16 +113,17 @@ class _AyudaState extends State<Ayuda> {
                   Navigator.push(
                       context,
                       CupertinoPageRoute(
-                          builder: (context) => Tutorial(Provider.of<Usuario>(
-                                  context)
-                              .nombre))); //Provider.of<Usuario>(context).nombre
+                          builder: (context) =>
+                              Tutorial(Provider.of<Usuario>(context, listen: true).nombre)));
                 },
               ),
               SizedBox(
                 height: 5,
               ),
               ListTile(
-                title: Text("Reportar un problema",),
+                title: Text(
+                  "Reportar un problema",
+                ),
                 leading: Icon(
                   Icons.report_problem,
                   color: Colors.lightBlue,

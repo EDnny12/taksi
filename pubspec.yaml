@@ -23,15 +23,15 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^0.1.2
-  provider: ^3.2.0
+  provider: ^4.0.5
   flutter_auth_buttons: ^0.6.0
   font_awesome_flutter: ^8.5.0
   image_picker: ^0.6.2+3
   firebase_auth: 0.15.3+1
   google_sign_in: ^4.1.1
   cloud_firestore: ^0.13.3
-  firebase_storage: ^3.1.1
-  shared_preferences: ^0.5.6+1
+  firebase_storage: ^3.1.5 #3.1.1
+  shared_preferences: ^0.5.6+3
   cached_network_image: ^1.1.3
   google_maps_flutter: ^0.5.11+1
   location: ^2.3.5
@@ -48,7 +48,7 @@ dependencies:
   flutter_launcher_icons: ^0.7.4
   flutter_rating_bar: ^3.0.1+1
   sliding_up_panel: ^1.0.0
-  share: ^0.6.3+5
+  share: ^0.6.3+6
   lottie: ^0.2.0
   toast: ^0.1.5
   url_launcher: ^5.4.1
@@ -58,9 +58,13 @@ dependencies:
   introduction_screen: ^1.0.8
   popup_menu: ^1.0.5
   animated_text_kit: ^2.0.0
+  stripe_payment: ^1.0.6
+  sqflite: ^1.3.0
+  firebase_messaging: ^6.0.13
+  geoflutterfire: ^2.0.3+6
 
 flutter_icons:
-  android: true
+  android: 'launcher_icon'
   ios: true
   image_path: "assets/logo.png"
 
@@ -83,11 +87,11 @@ flutter:
   assets:
     - assets/logo.png
     - assets/marker.png
-    - assets/taxo.png
     - assets/taxiApp.png
     - assets/marker_taxi.png
     - assets/daymode.json
     - assets/nightmode.json
+    - assets/pregunta.json
     - assets/mexico.png
     - assets/small-car.json
     - assets/error.json
@@ -105,6 +109,12 @@ flutter:
     - assets/marker_origen.png
     - assets/destino1.png
     - assets/origen1.png
+    - assets/img_locations.jpg
+    - assets/img1.png
+    - assets/img2.png
+    - assets/img3.png
+    - assets/img4.png
+    - assets/taxis.png
 
   fonts:
     - family: Bebas

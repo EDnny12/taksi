@@ -9,8 +9,16 @@ class Usuario with ChangeNotifier {
   String _ciudad;
   String _estado;
   String _inicio;
+  String _messageChofer;
   bool darkMode = false;
+  var _map;
 
+
+  get map => _map;
+
+  set map(value) {
+    _map = value;
+  }
 
   String get inicio => _inicio;
 
@@ -72,5 +80,13 @@ class Usuario with ChangeNotifier {
   set estado(String value) {
     _estado = value;
   }
+
+  String get messageChofer => _messageChofer;
+
+  set messageChofer(String value) {
+    _messageChofer = value;
+    notifyListeners();
+  }
+
 
 }

@@ -40,6 +40,7 @@ class _ViajesState extends State<Viajes> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
         elevation: 1.0,
         actions: <Widget>[
           PopupMenuButton<CustomPopupMenu>(

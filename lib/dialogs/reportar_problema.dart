@@ -30,7 +30,7 @@ class Alerts {
                           padding: EdgeInsets.all(5),
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
-                            color: Colors.grey[500],
+                            color: Colors.lightBlue,
                             borderRadius: BorderRadius.only(
                                 topLeft: Radius.circular(10),
                                 topRight: Radius.circular(10)),
@@ -78,19 +78,13 @@ class Alerts {
                                   Navigator.of(context2).pop();
                                   Loader().showCargando(
                                       context2, 'Enviando su reporte');
-                                  print(reportessage.text);
-                                  print(Provider.of<Usuario>(context).nombre);
-                                  print(Provider.of<Usuario>(context).correo);
-                                  print(DateTime.now());
-                                  print(Provider.of<Usuario>(context).ciudad);
-                                  print(Provider.of<Usuario>(context).estado);
                                   insertReporte(
                                       context2,
                                       reportessage.text,
-                                      Provider.of<Usuario>(context).nombre,
-                                      Provider.of<Usuario>(context).correo,
-                                      Provider.of<Usuario>(context).ciudad,
-                                      Provider.of<Usuario>(context).estado);
+                                      Provider.of<Usuario>(context, listen: false).nombre,
+                                      Provider.of<Usuario>(context, listen: false).correo,
+                                      Provider.of<Usuario>(context, listen: false).ciudad,
+                                      Provider.of<Usuario>(context, listen: false).estado);
                                 }
                               },
                               child: Text(
@@ -125,7 +119,7 @@ class Alerts {
       'ciudad': ciudad,
       'estado': estado,
       'fecha': DateTime.now(),
-    }).whenComplete(() {
+    }).whenComplete(() { /// poner el catch error
       Navigator.of(context).pop();
       DialogExitoso().dialogExitoso(context, 'Reporte enviado',
           'Gracias por enviarnos su reporte! sera tomado en cuenta para mejorar el servicio');

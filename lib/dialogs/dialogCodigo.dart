@@ -62,7 +62,7 @@ class DialogCodigo {
                           if (cupon.text.isNotEmpty) {
                             Navigator.of(context).pop();
                             Loader().showCargando(context2, 'Validando su código');
-                            Provider.of<AppState>(context2).verifyCodigo(context2, cupon.text);
+                            Provider.of<AppState>(context2, listen: false).verifyCodigo(context2, cupon.text);
                           } else {
                             Toast.show('Ingrese un código', context2,
                                 duration: Toast.LENGTH_SHORT, gravity: Toast.BOTTOM);

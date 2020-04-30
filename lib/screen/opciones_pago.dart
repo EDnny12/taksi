@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class OpcionesPago extends StatefulWidget {
@@ -45,66 +46,68 @@ class _OpcionesPagoState extends State<OpcionesPago> {
               ),
             ];
           },
-          body: TabBarView(
-            children: <Widget>[
-              Column(
-                children: <Widget>[
-                  Image.asset(
-                    "assets/taxiApp.png",
-                    height: 250,
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      'Si vas a realizar tu pago en efectivo, te recomendamos hacerlo al finalizar el servicio'
-                      ' y verificar que el precio indicado al principio de tu viaje sea el mismo.',
-                      textAlign: TextAlign.justify,
-                      style: TextStyle(
-                        fontSize: 16.0,
+          body: SafeArea(
+            child: TabBarView(
+              children: <Widget>[
+                Column(
+                  children: <Widget>[
+                    Image.asset(
+                      "assets/taxiApp.png",
+                      height: 250,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        'Si vas a realizar tu pago en efectivo, te recomendamos hacerlo al finalizar el servicio'
+                        ' y verificar que el precio indicado al principio de tu viaje sea el mismo.',
+                        textAlign: TextAlign.justify,
+                        style: TextStyle(
+                          fontSize: 16.0,
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-              Column(
-                children: <Widget>[
-                  Image.asset(
-                    "assets/taxiApp.png",
-                    height: 250,
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text('El valor del cupón puede variar y al utilizarlo en la aplicación se aplica un descuento '
-                        'al precio total del servicio',
-                      textAlign: TextAlign.justify,style: TextStyle(
-                        fontSize: 16.0,
-                      ),),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text('El cupón se debe ingresar antes de seleccionar el sitio de taxi, '
-                        'si ha ingresado un cupón y cancela el viaje, el cupón se toma como ya utilizado y no '
-                        'podrá volver a utilizarlo ',
-                      textAlign: TextAlign.justify,style: TextStyle(
-                        fontSize: 16.0,
-                      ),),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text('Los cupones son distribuidos en la página oficial de Tak-si en Facebook.'
-                        ' Te recomendamos que sigas la página y estés al pendiente de nuestras publicaciones',
-                      textAlign: TextAlign.justify,style: TextStyle(
-                        fontSize: 16.0,
-                      ),),
-                  ),
-                ],
-              ),
-              Center(
-                child: Text("No disponible en esta versión",style: TextStyle(
-                  fontSize: 16.0,
-                ),),
-              )
-            ],
+                  ],
+                ),
+                Column(
+                  children: <Widget>[
+                    Image.asset(
+                      "assets/taxiApp.png",
+                      height: 250,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text('El valor del cupón puede variar y al utilizarlo en la aplicación se aplica un descuento '
+                          'al precio total del servicio.',
+                        textAlign: TextAlign.justify,style: TextStyle(
+                          fontSize: 16.0,
+                        ),),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text('El cupón se debe ingresar antes de seleccionar el sitio de taxi, '
+                          'si ha ingresado un cupón y cancela el viaje, el cupón se toma como ya utilizado y no '
+                          'podrá volver a utilizarlo.',
+                        textAlign: TextAlign.justify,style: TextStyle(
+                          fontSize: 16.0,
+                        ),),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text('Los cupones son distribuidos en la página oficial de Tak-si en Facebook.'
+                          ' Te recomendamos que sigas la página y estés al pendiente de nuestras publicaciones.',
+                        textAlign: TextAlign.justify,style: TextStyle(
+                          fontSize: 16.0,
+                        ),),
+                    ),
+                  ],
+                ),
+                Center(
+                  child: Text("No disponible en esta versión.",style: TextStyle(
+                    fontSize: 16.0,
+                  ),),
+                )
+              ],
+            ),
           ),
         ),
       ),

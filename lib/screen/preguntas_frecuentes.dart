@@ -45,8 +45,9 @@ class _PreguntasFrecuentesState extends State<PreguntasFrecuentes> {
                       Padding(
                         padding: const EdgeInsets.only(left: 15, right: 15),
                         child: Text(
-                          'Dentro de la sección mis viajes podrás consultar el número de teléfono del chofer que te brindo '
-                          'el último servicio y de esta forma poder contactarlo.',
+                          'Dentro de la sección mis viajes podrás consultar el nombre del conductor que te brindo el servicio,'
+                          ' el número de taxi y a que sitio pertenece, con esa información podrás dirigirte a las oficinas del sitio de taxi'
+                          ' y poder contactarlo.',
                           softWrap: true,
                           style: TextStyle(
                             fontSize: 15.5,
@@ -70,7 +71,7 @@ class _PreguntasFrecuentesState extends State<PreguntasFrecuentes> {
                       Padding(
                         padding: const EdgeInsets.only(left: 15, right: 15),
                         child: Text(
-                          'Por medio de la página de Facebook Tak-si con gusto aclararemos todas tus dudas o al correo teamisoft@gmail.com',
+                          'Por medio de la página de Facebook Tak-si con gusto aclararemos todas tus dudas o al correo soporte.taksi@gmail.com',
                           softWrap: true,
                           style: TextStyle(
                             fontSize: 15.5,
@@ -174,7 +175,7 @@ class _PreguntasFrecuentesState extends State<PreguntasFrecuentes> {
                         padding: const EdgeInsets.only(left: 15, right: 15),
                         child: Text(
                           'Puedes cancelar tu viaje únicamente cuando el conductor aún no ha llegado al punto de partida presionando el botón de cancelar,'
-                          'cabe mencionar que el conductor también puede cancelar el viaje, en caso de algún inconveniente.',
+                          ' cabe mencionar que el conductor también puede cancelar el viaje, en caso de algún inconveniente.',
                           softWrap: true,
                           style: TextStyle(
                             fontSize: 15.5,

@@ -42,7 +42,7 @@ class DialogError {
                           textColor: Colors.white,
                           onPressed: () {
                             if (ubicacion == 'menu') {
-                              Provider.of<AppState>(context2).restablecerVariables(context2, 'menu');
+                              Provider.of<AppState>(context2, listen: false).restablecerVariables(context2, 'menu');
                             }
                             Navigator.of(context).pop();
                           },

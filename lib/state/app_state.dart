@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
+import 'package:geoflutterfire/geoflutterfire.dart';
+import 'package:rxdart/rxdart.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -16,13 +18,17 @@ import 'package:slide_to_confirm/slide_to_confirm.dart';
 import 'package:taksi/dialogs/dialogCancelacionViaje.dart';
 import 'package:taksi/dialogs/dialogCodigo.dart';
 import 'package:taksi/dialogs/dialogError.dart';
+import 'package:taksi/dialogs/dialogErrorNoDissmisible.dart';
+import 'package:taksi/dialogs/dialogMessageDriver.dart';
 import 'package:taksi/dialogs/dialogSolicitar.dart';
 import 'package:taksi/dialogs/exitoso.dart';
 import 'package:taksi/dialogs/loader.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:taksi/dialogs/showPhoto.dart';
-import 'package:taksi/providers/estilos.dart';
+import 'package:taksi/providers/configuration.dart';
+import 'package:taksi/providers/db_helper.dart';
 import 'package:taksi/providers/publicidad.dart';
+import 'package:taksi/providers/ubicaciones_guardadas.dart';
 import 'package:taksi/providers/usuario.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:carousel_slider/carousel_slider.dart';
@@ -65,7 +71,11 @@ class AppState with ChangeNotifier {
       showbtnNext = false,
       showMarkerInitial = false,
       showAppBar = false,
-      showInfoMarker = false;
+      showInfoMarker = false,
+      showSaveDestination = false,
+      showUbicaciones = true,
+      markerSaved = false,
+      errorCosto = false;
   List<String> listLineas = List<String>();
   var listDriver, listTaxi, list;
   double distancia = 0.0,
@@ -80,7 +90,8 @@ class AppState with ChangeNotifier {
   BitmapDescriptor pinLocationIcon,
       markerDriver,
       markerPublicidad,
-      markerOrigen;
+      markerOrigen,
+      markerTaxis;
   final Set<Marker> _markers = {};
   final Set<Polyline> _polyLines = {};
   GoogleMapController _mapController;
@@ -123,6 +134,17 @@ class AppState with ChangeNotifier {
   final databaseReference = Firestore.instance;
   StreamSubscription<QuerySnapshot> streamSub, streamSub2;
 
+  //showMarkerCars
+  //final subject = new BehaviorSubject<int>(seedValue: 1);
+  //var radius = new BehaviorSubject<double>.seeded(100.0);
+  //final radius = BehaviorSubject<double>(seedValue: 100.0);
+  final radius = BehaviorSubject<double>.seeded(100.0);
+  //final radius = HydratedSubject<double>("count", seedValue: 100.0);
+  Stream<dynamic> query;
+  StreamSubscription subCars;
+  Geoflutterfire geo = Geoflutterfire();
+
+  var dbHelper;
   BuildContext context1;
   var a;
   PopupMenu menu;
@@ -135,6 +157,47 @@ class AppState with ChangeNotifier {
     Firestore.instance.settings(persistenceEnabled: false);
     getUserCurrentLocation(context);
     _loadingInitialPosition(context);
+    dbHelper = DBHelper();
+    getLinksConfigurationApp(context);
+  }
+
+  getLinksConfigurationApp(context) {
+    Firestore.instance.collection('configuracion').getDocuments().then((value) {
+      if (value.documents.isNotEmpty) {
+        Provider.of<Configuration>(context, listen: false).link_pagina =
+        value.documents[0]['link_pagina'];
+        Provider.of<Configuration>(context, listen: false).link_playstore =
+        value.documents[0]['link_playstore'];
+        Provider.of<Configuration>(context, listen: false).link_terminos =
+        value.documents[0]['link_terminos'];
+        Provider.of<Configuration>(context, listen: false).link_facebook =
+        value.documents[0]['link_facebook'];
+      } else {
+        getLinksConfigurationApp(context);
+      }
+    }).catchError((error) {
+      getLinksConfigurationApp(context);
+    });
+  }
+
+  getTaxis() async {
+    var ref = Firestore.instance.collection(ciudadUsuario);
+    GeoFirePoint center =
+        geo.point(latitude: position.latitude, longitude: position.longitude);
+    subCars = radius.switchMap((rad) {
+      return geo.collection(collectionRef: ref).within(
+          center: center, radius: rad, field: 'ubicacion', strictMode: true);
+    }).listen(updateLocationCars);
+  }
+
+  void updateLocationCars(List<DocumentSnapshot> documentList) {
+    print(documentList);
+    // eliminar los carros anteriores
+    documentList.forEach((DocumentSnapshot document) {
+      GeoPoint point = document.data['ubicacion'];
+      addMarker(LatLng(point.latitude, point.longitude),
+          point.latitude.toString(), '', document.data['rotacion']);
+    });
   }
 
   void onDismiss() {
@@ -150,8 +213,8 @@ class AppState with ChangeNotifier {
       Navigator.push(
           context,
           CupertinoPageRoute(
-              builder: (context) =>
-                  Tutorial(Provider.of<Usuario>(context).nombre)));
+              builder: (context) => Tutorial(
+                  Provider.of<Usuario>(context, listen: false).nombre)));
       prefs.setString('tutorial', 'true');
     } else {
       print('tutorial visto');
@@ -168,6 +231,8 @@ class AppState with ChangeNotifier {
         'assets/marker_taxi.png'); //aqui va el carro
     markerOrigen = await BitmapDescriptor.fromAssetImage(
         ImageConfiguration(devicePixelRatio: 2), 'assets/marker_origen.png');
+    markerTaxis = await BitmapDescriptor.fromAssetImage(
+        ImageConfiguration(devicePixelRatio: 2), 'assets/taxis.png');
   }
 
   getUserCurrentLocation(context) {
@@ -179,12 +244,6 @@ class AppState with ChangeNotifier {
       getNameUbicationUser(position);
       if (_initialPosition == null) {
         getUserLocation(context);
-      }
-
-      if (ciudadRegistrada) {
-        if (listLineas.isEmpty) {
-          getLineasTaxis();
-        }
       }
     });
   }
@@ -208,43 +267,48 @@ class AppState with ChangeNotifier {
   //obtener la ubicacion del usuario
   void getUserLocation(context) async {
     _initialPosition = LatLng(position.latitude, position.longitude);
-
     //codigo_postal2 = placemark[0].administrativeArea; // chiapas
-    if (_mapController != null) {
-      updateLocationCamara(_initialPosition, 16.0);
-    } else {
-      List<Placemark> placemark = await Geolocator()
-          .placemarkFromCoordinates(position.latitude, position.longitude);
-      locationController.text = placemark[0].name;
-      ciudadUsuario = placemark[0].locality; // comitan de dominguez
-      Provider.of<Usuario>(context).ciudad = ciudadUsuario;
-      Provider.of<Usuario>(context).estado = placemark[0].administrativeArea;
+    await Geolocator()
+        .placemarkFromCoordinates(position.latitude, position.longitude)
+        .then((value) {
+      locationController.text = value[0].name;
+      ciudadUsuario = value[0].locality; // comitan de dominguez
+      Provider.of<Usuario>(context, listen: false).ciudad = ciudadUsuario;
+      Provider.of<Usuario>(context, listen: false).estado =
+          value[0].administrativeArea;
       getCalificacionUser(context);
-      checkStatusViajesUser(context, ciudadUsuario);
-      /* verificar si la ciudad esta registrada*/
-      /*getCiudadAfiliada().then((value) {
-        if (value.documents.isEmpty) {
-          ciudadRegistrada = false;
-        } else {
-          ciudadRegistrada = true;
-          datosCiudad = value;
-          getLineasTaxis();
-        }
-      });*/
-    }
+      print('ciudad usuario getUserLocation:' + ciudadUsuario);
+      if (ciudadUsuario.isEmpty) {
+        getUserLocation(context);
+      } else {
+        checkStatusViajesUser(context, ciudadUsuario);
+        getTaxis();
+      }
+    }).catchError((error) {
+      print('error: ' + error.toString());
+      getUserLocation(context);
+      Toast.show('Error al obtener su ubicación', context,
+          duration: Toast.LENGTH_SHORT, gravity: Toast.CENTER);
+    });
     notifyListeners();
+  }
+
+  void cameraPositionUser() {
+    updateLocationCamara(_initialPosition, 16.0);
   }
 
   void checkStatusViajesUser(context, String ciudadUsuario) async {
     await databaseReference
         .collection('solicitudes_viajes')
-        .where('correo', isEqualTo: Provider.of<Usuario>(context).correo)
+        .where('correo',
+            isEqualTo: Provider.of<Usuario>(context, listen: false).correo)
         .getDocuments()
         .then((value) {
       if (value.documents.isNotEmpty) {
         if (value.documents[0]['status'] == 'finalizado' ||
             value.documents[0]['status'] == 'cancelado_usuario' ||
-            value.documents[0]['status'] == 'cancelado_chofer') {
+            value.documents[0]['status'] == 'cancelado_chofer' ||
+            value.documents[0]['status'] == 'cancelado') {
           databaseReference.runTransaction((transaction) async {
             await transaction.delete(value.documents[0].reference);
           });
@@ -347,7 +411,10 @@ class AppState with ChangeNotifier {
             ' ' +
             onValue[0].locality;
 
+        print('ciudad usuario: ' +
+            ciudadUsuario); // en el bottomsheet verificar si la ciudad del usuario esta vacia marcar error
         if (onValue[0].locality.isNotEmpty) {
+          // inicializar en null _initialposition para que se vuelva a inicializar la variable ciudadusuario
           if (onValue[0].locality != ciudadUsuario) {
             print('viaje foraneo ciudad: ' + onValue[0].locality.toString());
             viajeForaneo = true;
@@ -403,7 +470,13 @@ class AppState with ChangeNotifier {
       _markers.add(Marker(
           markerId: MarkerId("Destino"),
           position: location,
-          infoWindow: InfoWindow(title: marker, snippet: "Destino"),
+          onTap: () async {
+            showSaveDestination = true;
+            updateLocationCamara(destination, 16.1);
+            await Future.delayed(Duration(seconds: 2)).then((onValue) {
+              showSaveDestination = false;
+            });
+          },
           icon: pinLocationIcon));
       if (tipoViaje != 'recuperado') {
         Navigator.of(context1).pop();
@@ -415,16 +488,22 @@ class AppState with ChangeNotifier {
           onTap: () {
             showInfoMarkerMethod(empresa);
           },
-          //infoWindow: InfoWindow(title: empresa, snippet: empresa),
           icon: markerPublicidad));
     } else if (marker == 'origen') {
       _positionPartida = location;
       _markers.removeWhere((m) => m.markerId.value == 'origen');
       _markers.add(Marker(
-          markerId: MarkerId(empresa),
+          markerId: MarkerId(marker),
           position: location,
-          infoWindow: InfoWindow(title: empresa, snippet: empresa),
+          infoWindow: InfoWindow(title: marker, snippet: marker),
           icon: markerOrigen));
+    } else if (marker == 'taxis') {
+      print('marker taxis' + marker);
+      _markers.add(Marker(
+          markerId: MarkerId(marker),
+          position: location,
+          rotation: rotacion,
+          icon: markerTaxis));
     } else {
       _markers.removeWhere((m) => m.markerId.toString() == 'chofer');
       _markers.add(Marker(
@@ -440,20 +519,19 @@ class AppState with ChangeNotifier {
   Future<void> showInfoMarkerMethod(String empresa) async {
     for (int i = 0; i < listPublicidad.length; i++) {
       if (listPublicidad[i].data['empresa'] == empresa) {
-        Provider.of<Publicidad>(context1).empresa =
+        Provider.of<Publicidad>(context1, listen: false).empresa =
             listPublicidad[i].data['empresa'];
-        Provider.of<Publicidad>(context1).descripcion =
+        Provider.of<Publicidad>(context1, listen: false).descripcion =
             listPublicidad[i].data['descripcion'];
-        Provider.of<Publicidad>(context1).telefono =
+        Provider.of<Publicidad>(context1, listen: false).telefono =
             listPublicidad[i].data['telefono'];
-        Provider.of<Publicidad>(context1).marker =
+        Provider.of<Publicidad>(context1, listen: false).marker =
             listPublicidad[i].data['marker'];
         break;
       }
     }
-
     showInfoMarker = true;
-    await Future.delayed(Duration(seconds: 3)).then((onValue) {
+    await Future.delayed(Duration(seconds: 2)).then((onValue) {
       showInfoMarker = false;
     });
   }
@@ -518,34 +596,6 @@ class AppState with ChangeNotifier {
             });
           }
         });
-
-        /*if (!ciudadRegistrada) {
-          //aqui verificar la ciudad no con la variable si no con una consulta
-          Navigator.of(context).pop();
-          DialogSolicitar(ciudadUsuario, scaffoldKey).dialogSolicitar(context);
-          showBtnRestablecer = false;
-        } else {
-          //obtener distancia y tiempo
-          metodos.getTime(partida, destination).then((value) async {
-            if (value != null) {
-              print('value + ' + value);
-              distanciaViaje = value.split('-')[0];
-              print('poli ' + distanciaViaje);
-              tiempo = value.split('-')[1];
-              if (costo.isEmpty) {
-                calculatePrecioViaje(context, datosCiudad, distanciaViaje);
-              }
-
-              if (tipoViaje != 'recuperado') {
-                Navigator.of(context).pop(); //debe de ir
-                persistentBottomSheetDatosViaje(
-                    context, tiempo, distanciaViaje);
-                await Future.delayed(Duration(seconds: 1));
-                showAnimationCar(polylineCoordinates);
-              }
-            }
-          });
-        }*/
       } else {
         //error al trazar la linea
         Navigator.of(context).pop();
@@ -657,205 +707,301 @@ class AppState with ChangeNotifier {
 
   persistentBottomSheetDatosViaje(context2, String tiempo, String distancia) {
     showBtnRestablecer = false;
-    controller2 = scaffoldKey.currentState.showBottomSheet((context) {
-      return Container(
-        margin: const EdgeInsets.only(top: 5, left: 5, right: 5, bottom: 5),
-        height: 165,
-        decoration: BoxDecoration(
-            color: Theme.of(context).brightness == Brightness.dark
-                ? Colors.black87
-                : Colors.white,
-            borderRadius: BorderRadius.all(Radius.circular(15)),
-            boxShadow: [
-              BoxShadow(
-                  blurRadius: 10,
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? Colors.white12
-                      : Colors.grey,
-                  //color: Colors.grey,
-                  spreadRadius: 3)
-            ]),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: <Widget>[
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Text(
-                        tiempo,
-                        style: TextStyle(fontSize: 20),
-                      ),
-                      SizedBox(
-                        width: 10,
-                      ),
-                      Text(
-                        '(' + distancia + ')',
-                        style: TextStyle(fontSize: 20),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            viajeForaneo
-                ? Text(
-                    'Viaje fuera de la ciudad!',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? Colors.white70
-                          : Colors.black87,
-                    ),
-                  )
-                : SizedBox(),
-            SizedBox(
-              height: 5,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Expanded(
-                  child: Container(
-                    margin: EdgeInsets.only(left: 10, right: 10),
-                    height: 1.5,
+    if (errorCosto) {
+      DialogErrorNoDissmisible().dialogErrorNoDismissible(
+          context2,
+          'Ocurrió un error',
+          'Ocurrió un error al calcular el costo por favor intente de nuevo',
+          'ubicacion');
+    } else {
+      controller2 = scaffoldKey.currentState.showBottomSheet((context) {
+        return Container(
+          margin: const EdgeInsets.only(top: 5, left: 5, right: 5, bottom: 5),
+          height: 165,
+          decoration: BoxDecoration(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              borderRadius: BorderRadius.all(Radius.circular(15)),
+              boxShadow: [
+                BoxShadow(
+                    blurRadius: 10,
                     color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white70
-                        : Colors.black54,
-                  ),
-                ),
-                Text(
-                  'Método de pago',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white70
-                        : Colors.black54,
-                  ),
-                ),
-                Expanded(
-                  child: Container(
-                    margin: EdgeInsets.only(left: 10, right: 10),
-                    height: 1.5,
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white70
-                        : Colors.black54,
-                  ),
-                ),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Expanded(
-                    child: Column(
+                        ? Colors.white12
+                        : Colors.grey,
+                    //color: Colors.grey,
+                    spreadRadius: 3)
+              ]),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: <Widget>[
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    Text(
-                      'Efectivo',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Theme.of(context).brightness == Brightness.dark
-                            ? Colors.white70
-                            : Colors.black54,
-                        //color: Colors.black54,
-                      ),
-                    ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
                         Text(
-                          '\$ $costo.00',
-                          style: TextStyle(
-                              fontSize: 20,
-                              color: Provider.of<AppState>(context)
-                                          ._costoDescuento ==
-                                      ''
-                                  ? Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? Colors.white
-                                      : Colors.black
-                                  : Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? Colors.white70
-                                      : Colors.black54,
-                              decoration: Provider.of<AppState>(context)
-                                          ._costoDescuento ==
-                                      ''
-                                  ? TextDecoration.none
-                                  : TextDecoration.lineThrough),
-                          textAlign: TextAlign.center,
+                          tiempo,
+                          style: TextStyle(fontSize: 20),
                         ),
                         SizedBox(
-                          width: 12,
+                          width: 10,
                         ),
                         Text(
-                          Provider.of<AppState>(context)._costoDescuento,
-                          style: TextStyle(
-                              fontSize: 20,
-                              color: Theme.of(context).brightness ==
-                                      Brightness.dark
-                                  ? Colors.white
-                                  : Colors.black),
-                          textAlign: TextAlign.center,
+                          '(' + distancia + ')',
+                          style: TextStyle(fontSize: 20),
                         ),
                       ],
                     ),
                   ],
-                )),
-                Expanded(
-                    child: FlatButton(
-                  child: new Text(
-                    'Código',
-                    style: TextStyle(fontSize: 15),
-                  ),
-                  onPressed: () {
-                    if (!ciudadRegistrada) {
-                      DialogSolicitar(ciudadUsuario, scaffoldKey)
-                          .dialogSolicitar(context2);
-                    } else {
-                      //showAlertCodigoViaje(context);
-                      DialogCodigo().showAlertCodigoViaje(context);
-                    }
-                  },
-                )),
-              ],
-            ),
-            SizedBox(
-              height: 5,
-            ),
-            SizedBox(
-              width: double.infinity,
-              height: 35,
-              child: RaisedButton.icon(
-                color: Colors.blue,
-                label: Text('Continuar',
-                    style: TextStyle(fontSize: 20, color: Colors.white)),
-                icon: Icon(
-                  Icons.check,
-                  color: Colors.white,
                 ),
-                onPressed: () {
-                  showBottomShettLineas(context2);
-                },
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.only(
-                        bottomLeft: Radius.circular(15),
-                        bottomRight: Radius.circular(15))),
               ),
-            ),
-          ],
-        ),
-      );
-    });
-    controller2.closed.then((value) {
-      persistentBottomSheetDatosViaje(context2, tiempo, distancia);
-    });
+              viajeForaneo
+                  ? Text(
+                      'Viaje fuera de la ciudad!',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white70
+                            : Colors.black87,
+                      ),
+                    )
+                  : SizedBox(),
+              SizedBox(
+                height: 5,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Expanded(
+                    child: Container(
+                      margin: EdgeInsets.only(left: 10, right: 10),
+                      height: 1.5,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white70
+                          : Colors.black54,
+                    ),
+                  ),
+                  Text(
+                    'Método de pago',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white70
+                          : Colors.black54,
+                    ),
+                  ),
+                  Expanded(
+                    child: Container(
+                      margin: EdgeInsets.only(left: 10, right: 10),
+                      height: 1.5,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white70
+                          : Colors.black54,
+                    ),
+                  ),
+                ],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Expanded(
+                      child: Column(
+                    children: <Widget>[
+                      Text(
+                        'Efectivo',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.white70
+                              : Colors.black54,
+                          //color: Colors.black54,
+                        ),
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          Text(
+                            '\$ $costo.00',
+                            style: TextStyle(
+                                fontSize: 20,
+                                color: Provider.of<AppState>(context,
+                                                listen: false)
+                                            ._costoDescuento ==
+                                        ''
+                                    ? Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? Colors.white
+                                        : Colors.black
+                                    : Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? Colors.white70
+                                        : Colors.black54,
+                                decoration: Provider.of<AppState>(context,
+                                                listen: false)
+                                            ._costoDescuento ==
+                                        ''
+                                    ? TextDecoration.none
+                                    : TextDecoration.lineThrough),
+                            textAlign: TextAlign.center,
+                          ),
+                          SizedBox(
+                            width: 12,
+                          ),
+                          Text(
+                            Provider.of<AppState>(context, listen: false)
+                                ._costoDescuento,
+                            style: TextStyle(
+                                fontSize: 20,
+                                color: Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? Colors.white
+                                    : Colors.black),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ],
+                  )),
+                  Expanded(
+                      child: FlatButton(
+                    child: new Text(
+                      'Código',
+                      style: TextStyle(fontSize: 15),
+                    ),
+                    onPressed: () {
+                      if (!ciudadRegistrada) {
+                        DialogSolicitar(ciudadUsuario, scaffoldKey)
+                            .dialogSolicitar(context2);
+                      } else {
+                        DialogCodigo().showAlertCodigoViaje(context);
+                      }
+                    },
+                  )),
+                ],
+              ),
+              SizedBox(
+                height: 5,
+              ),
+              SizedBox(
+                width: MediaQuery.of(context).size.width,
+                height: 35,
+                child: Row(
+                  children: <Widget>[
+                    Expanded(
+                      flex: 2,
+                      child: RaisedButton.icon(
+                        //heigt 35
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? Colors.tealAccent
+                            : Colors.blue,
+                        label: Text('Continuar',
+                            style: TextStyle(
+                                fontSize: 20,
+                                color: Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? Colors.black
+                                    : Colors.white)),
+                        icon: Icon(
+                          Icons.check,
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.black
+                              : Colors.white,
+                        ),
+                        onPressed: () {
+                          Loader().showCargando(context,
+                              'Obteniendo los sitios de taxis de tu ciudad');
+                          getLineasTaxis().then((value) {
+                            if (value.documents.isNotEmpty) {
+                              if (cargar) {
+                                listLineas.add('Todos los sitios');
+                                value.documents.forEach((value2) {
+                                  listLineas.add(value2['nombre']);
+                                  cargar = false;
+                                });
+                              }
+                              showBottomShettLineas(context2);
+                            } else {
+                              Navigator.of(context).pop();
+                              DialogError().dialogError(
+                                  context,
+                                  'Ocurrió un error',
+                                  'No logramos obtener los sitios de taxis, por favor inténtelo de nuevo',
+                                  'lineas');
+                            }
+                          }).catchError((value) {
+                            Navigator.of(context).pop();
+                            DialogError().dialogError(
+                                context,
+                                'Ocurrió un error',
+                                'No logramos obtener los sitios de taxis, por favor inténtelo de nuevo',
+                                'lineas');
+                          });
+                        },
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.only(
+                                bottomLeft: Radius.circular(15),
+                                bottomRight: Radius.circular(15))),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 1,
+                      child: SizedBox.fromSize(
+                        //size: Size(40, 40), // button width and height
+                        child: ClipOval(
+                          child: Material(
+                            /*color: Theme.of(context).brightness == Brightness.dark
+                                ? Colors.white24
+                                : Colors.black26, */ // button color
+                            color: Colors.transparent,
+                            child: InkWell(
+                              splashColor: Colors.blue, // splash color
+                              onTap: () {
+                                Provider.of<Usuario>(context, listen: false)
+                                    .messageChofer = null;
+                                DialogMessage().dialogMessage(context);
+                              }, // button pressed
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: <Widget>[
+                                  Provider.of<Usuario>(context, listen: true)
+                                              .messageChofer ==
+                                          null
+                                      ? Icon(
+                                          Icons.message,
+                                          size: 30,
+                                        )
+                                      : Text(
+                                          Provider.of<Usuario>(context,
+                                                      listen: false)
+                                                  .messageChofer
+                                                  .substring(0, 5) +
+                                              '...',
+                                          style: TextStyle(fontSize: 15),
+                                        ), // icon
+                                  //Text("Call"), // text
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      });
+      controller2.closed.then((value) {
+        persistentBottomSheetDatosViaje(context2, tiempo, distancia);
+      });
+    }
   }
 
   void showBottomShettLineas(context2) async {
+    Navigator.of(context2).pop();
     showModalBottomSheet(
         backgroundColor: Theme.of(context2).brightness == Brightness.dark
             ? Colors.black87
@@ -866,12 +1012,19 @@ class AppState with ChangeNotifier {
         context: context2,
         builder: (context) {
           return Container(
-              height: 220,
+              height: 240,
               child: Stack(
                 children: <Widget>[
-                  Align(
-                      alignment: Alignment.topCenter,
-                      child: Estilos().estilo(context, 'Seleccione un sitio')),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 15),
+                    child: Align(
+                        alignment: Alignment.topCenter,
+                        child: Text(
+                          'Seleccione un sitio',
+                          style: TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.w500),
+                        )),
+                  ),
                   CarouselWithIndicator(context2, listLineas),
                 ],
               ));
@@ -882,14 +1035,15 @@ class AppState with ChangeNotifier {
     origenGeo = GeoPoint(_positionPartida.latitude, _positionPartida.longitude);
     destinoGeo = GeoPoint(destination.latitude, destination.longitude);
     getLocationDrivers(
-        Provider.of<Usuario>(context).telefono,
+        Provider.of<Usuario>(context, listen: false).telefono,
         sitio,
         origenGeo,
         destinoGeo,
         ciudadUsuario,
-        Provider.of<Usuario>(context).nombre,
-        Provider.of<Usuario>(context).correo,
-        Provider.of<Usuario>(context).foto,
+        Provider.of<Usuario>(context, listen: false).nombre,
+        Provider.of<Usuario>(context, listen: false).correo,
+        Provider.of<Usuario>(context, listen: false).foto,
+        Provider.of<Usuario>(context, listen: false).messageChofer,
         context);
     Navigator.of(context).pop();
     Loader().showCargando(context, 'Buscando el Tak-si más cercano!');
@@ -947,9 +1101,21 @@ class AppState with ChangeNotifier {
         costoDes = (int.parse(costo) - descuentoCupon).toString();
         _costoDescuento = '\$ ' + costoDes + '.00';
       }
+
+      if (ciudad.documents.first['tarifa_base'].toString().isNotEmpty) {
+        if (int.parse(costo) < ciudad.documents.first['tarifa_base']) {
+          // marcar error por que es menor al costo base
+          print('error al calcular el precio');
+          errorCosto = true;
+        }
+      } else {
+        //mostrar error y restablecer
+        errorCosto = true;
+      }
     } else {
-      DialogError().dialogError(context, 'Ocurrio un error',
-          'Ocurrio un error por favor intentelo de nuevo', 'menu');
+      errorCosto = true;
+      /*DialogError().dialogError(context, 'Ocurrio un error',
+          'Ocurrio un error por favor intentelo de nuevo', 'menu');*/
     }
   }
 
@@ -960,23 +1126,12 @@ class AppState with ChangeNotifier {
     scaffoldKey.currentState.showSnackBar(snackBar);
   }
 
-  getLineasTaxis() async {
-    databaseReference
+  Future<QuerySnapshot> getLineasTaxis() async {
+    QuerySnapshot query = await databaseReference
         .collection("lineas")
         .where("ciudad", isEqualTo: ciudadUsuario)
-        .getDocuments()
-        .then((value) {
-      if (cargar) {
-        listLineas.add('Todos los sitios');
-        value.documents.forEach((value2) {
-          listLineas.add(value2['nombre']);
-          cargar = false;
-        });
-      }
-      return listLineas;
-    }).catchError((error) {
-      getLineasTaxis();
-    });
+        .getDocuments();
+    return query;
   }
 
   Future<QuerySnapshot> getCiudadAfiliada() async {
@@ -997,6 +1152,7 @@ class AppState with ChangeNotifier {
       String nombreUsuario,
       String email,
       String foto,
+      String mensajeChofer,
       context) async {
     if (sitio == 'Todos los sitios') {
       QuerySnapshot querySnapshot = await Firestore.instance
@@ -1037,13 +1193,13 @@ class AppState with ChangeNotifier {
       }
 
       insertSolicitudViaje(telefono, sitio, origen, destino, ciudad,
-          nombreUsuario, email, chofer, foto, context);
+          nombreUsuario, email, chofer, foto, mensajeChofer, context);
     } else {
       itemLineas = 0;
       Navigator.of(context).pop(); // no hay taxis disponibles
       if (sitio == 'Todos los sitios') {
         DialogError().dialogError(context, 'Lo sentimos!',
-            'No se encontro taxi disponible, intentelo de nuevo', 'state');
+            'No se encontro taxi disponible, inténtelo de nuevo', 'state');
       } else {
         DialogError().dialogError(
             context,
@@ -1064,6 +1220,7 @@ class AppState with ChangeNotifier {
       String correo,
       String chofer,
       String foto,
+      String mensajeChofer,
       context) async {
     await databaseReference
         .collection('solicitudes_viajes')
@@ -1080,6 +1237,7 @@ class AppState with ChangeNotifier {
       'foto': foto,
       'status': 'false',
       'calificacion': calificacion,
+      'mensaje': mensajeChofer,
       'precio': _costoDescuento == '' ? costo : costoDes,
       'descuento': _costoDescuento == '' ? 0 : descuentoCupon,
       'tipoPago': _costoDescuento == '' ? 'Efectivo' : 'Codigo'
@@ -1271,9 +1429,7 @@ class AppState with ChangeNotifier {
   Widget floatingCollapsed(context) {
     return Container(
       decoration: BoxDecoration(
-          color: Theme.of(context).brightness == Brightness.dark
-              ? Colors.black
-              : Colors.white,
+          color: Theme.of(context).scaffoldBackgroundColor,
           borderRadius: BorderRadius.only(
               topLeft: Radius.circular(15.0), topRight: Radius.circular(15.0)),
           boxShadow: [BoxShadow(color: Colors.transparent, spreadRadius: 5)]),
@@ -1309,14 +1465,16 @@ class AppState with ChangeNotifier {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
                       Text(
-                        Provider.of<AppState>(context).mensajeTime,
+                        Provider.of<AppState>(context, listen: true)
+                            .mensajeTime,
                         style: TextStyle(color: Colors.blueGrey, fontSize: 14),
                       ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
                           Text(
-                            Provider.of<AppState>(context).tiempoChofer,
+                            Provider.of<AppState>(context, listen: true)
+                                .tiempoChofer,
                             style: TextStyle(fontSize: 19),
                           ),
                           SizedBox(
@@ -1324,7 +1482,8 @@ class AppState with ChangeNotifier {
                           ),
                           Text(
                             '(' +
-                                Provider.of<AppState>(context).distanciaChofer +
+                                Provider.of<AppState>(context, listen: true)
+                                    .distanciaChofer +
                                 ')',
                             style: TextStyle(fontSize: 19),
                           ),
@@ -1346,9 +1505,7 @@ class AppState with ChangeNotifier {
     PopupMenu.context = context;
     return Container(
       decoration: BoxDecoration(
-          color: Theme.of(context).brightness == Brightness.dark
-              ? Colors.black87
-              : Colors.white,
+          color: Theme.of(context).scaffoldBackgroundColor,
           borderRadius: BorderRadius.all(Radius.circular(15.0)),
           boxShadow: [
             BoxShadow(
@@ -1376,7 +1533,8 @@ class AppState with ChangeNotifier {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
                         Text(
-                          Provider.of<AppState>(context).mensajeTime,
+                          Provider.of<AppState>(context, listen: true)
+                              .mensajeTime,
                           style:
                               TextStyle(color: Colors.blueGrey, fontSize: 16),
                         ),
@@ -1384,7 +1542,8 @@ class AppState with ChangeNotifier {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: <Widget>[
                             Text(
-                              Provider.of<AppState>(context).tiempoChofer,
+                              Provider.of<AppState>(context, listen: true)
+                                  .tiempoChofer,
                               style: TextStyle(fontSize: 20),
                             ),
                             SizedBox(
@@ -1392,7 +1551,7 @@ class AppState with ChangeNotifier {
                             ),
                             Text(
                               '(' +
-                                  Provider.of<AppState>(context)
+                                  Provider.of<AppState>(context, listen: true)
                                       .distanciaChofer +
                                   ')',
                               style: TextStyle(fontSize: 20),
@@ -1897,8 +2056,10 @@ class AppState with ChangeNotifier {
                                 Navigator.of(context).pop();
                                 Loader().showCargando(context2,
                                     'Obteniendo los datos de su viaje');
-                                getStatusAceptDriver(context2,
-                                    Provider.of<Usuario>(context).correo);
+                                getStatusAceptDriver(
+                                    context2,
+                                    Provider.of<Usuario>(context, listen: false)
+                                        .correo);
                               } else {
                                 Navigator.of(context).pop();
                               }
@@ -1943,6 +2104,7 @@ class AppState with ChangeNotifier {
   }
 
   void restablecerVariables(context, String status) {
+    Provider.of<Usuario>(context, listen: false).messageChofer = null;
     listPositionDriver = null;
     itemLineas = 0;
     showFloating = true;
@@ -1981,6 +2143,10 @@ class AppState with ChangeNotifier {
     geoPosiPartida = null;
     geoPosiDestination = null;
     showInfoMarker = false;
+    showSaveDestination = false;
+    showUbicaciones = true;
+    markerSaved = false;
+    errorCosto = false;
 
     if (status == 'menu') {
       controller = scaffoldKey.currentState.showBottomSheet((context) {
@@ -1999,8 +2165,9 @@ class AppState with ChangeNotifier {
       }
     }
 
-    _markers.removeWhere((m) => m.markerId.value == 'Ubicación');
-    getUserLocation(context);
+    _markers.removeWhere((m) => m.markerId.value == 'origen');
+    cameraPositionUser();
+    //getUserLocation(context); //metodo para mover el mapa a la ubicacion del usuario
     //prubas
     destination = null;
     _polyLines.clear();
@@ -2015,7 +2182,8 @@ class AppState with ChangeNotifier {
   void getCalificacionUser(context) async {
     QuerySnapshot querySnapshot = await Firestore.instance
         .collection('calificaciones_usuarios')
-        .where('email', isEqualTo: Provider.of<Usuario>(context).correo)
+        .where('email',
+            isEqualTo: Provider.of<Usuario>(context, listen: false).correo)
         .getDocuments();
     if (querySnapshot.documents.length != 0) {
       final datos = querySnapshot.documents[0].data['calificacion'];
@@ -2023,7 +2191,7 @@ class AppState with ChangeNotifier {
     } else {
       calificacion = '';
     }
-    Provider.of<Usuario>(context).calificacion = calificacion;
+    Provider.of<Usuario>(context, listen: false).calificacion = calificacion;
   }
 
   get distanciaChofer => _distanciaChofer;
@@ -2177,10 +2345,8 @@ class AppState with ChangeNotifier {
         await transaction.update(value.documents[0].reference,
             {'calificacion': calificacionfinal, 'viajes': numeroViajes});
         restablecerVariables(context, 'finalizado');
-        getUserLocation(context);
       });
-    }).catchError((value) {
-    });
+    }).catchError((value) {});
   }
 
   void verifyCodigo(context, String text) {
@@ -2195,7 +2361,8 @@ class AppState with ChangeNotifier {
           Firestore.instance
               .collection('usuarios')
               .where('telefono',
-                  isEqualTo: Provider.of<Usuario>(context).telefono)
+                  isEqualTo:
+                      Provider.of<Usuario>(context, listen: false).telefono)
               .where('codigos', arrayContains: text)
               .getDocuments()
               .then((usuario) {
@@ -2208,7 +2375,8 @@ class AppState with ChangeNotifier {
               Firestore.instance
                   .collection('usuarios')
                   .where('telefono',
-                      isEqualTo: Provider.of<Usuario>(context).telefono)
+                      isEqualTo:
+                          Provider.of<Usuario>(context, listen: false).telefono)
                   .getDocuments()
                   .then((usuario2) {
                 Firestore.instance.runTransaction((add) async {
@@ -2289,6 +2457,7 @@ class AppState with ChangeNotifier {
   }
 
   void selectPuntoPartida(context) async {
+    showUbicaciones = false;
     updateLocationCamara(initialPosition, 19.0);
     showBtnPersistentDialog = true;
     showAppBar = true;
@@ -2309,6 +2478,28 @@ class AppState with ChangeNotifier {
     Loader().showCargando(
         context, 'Calculando la mejor ruta'); //calculando la mejor ruta
     setPolynes(_positionPartida, destination, context);
+  }
+
+  Future<void> saveUbicationDestination(context, String nombre) {
+    Ubicaciones ubica = Ubicaciones(null, nombre, destinationController.text,
+        destination.latitude, destination.longitude);
+    dbHelper.save(ubica);
+    Navigator.of(context1).pop();
+    DialogExitoso().dialogExitoso(context1, 'Ubicación guardada',
+        'Se registró su ubicación exitosamente');
+    markerSaved = true;
+    updateLocationCamara(destination, 16.0);
+    Provider.of<Usuario>(context, listen: false).map.refreshList();
+  }
+
+  void cancelPuntoPartida(context) {
+    showUbicaciones = true;
+    updateLocationCamara(destination, 16.0);
+    showBtnPersistentDialog = false;
+    showAppBar = false;
+    showMarkerInitial = false;
+    _markers.removeWhere((m) => m.markerId.value == 'origen');
+    notifyListeners();
   }
 }
 
@@ -2393,7 +2584,7 @@ class _CarouselWithIndicatorState extends State<CarouselWithIndicator> {
     return Column(mainAxisAlignment: MainAxisAlignment.end, children: [
       InkWell(
         onTap: () {
-          Provider.of<AppState>(context2)
+          Provider.of<AppState>(context2, listen: false)
               .onPressedBottomSheetLineas(context2, listLineas2[_current]);
         },
         child: CarouselSlider(

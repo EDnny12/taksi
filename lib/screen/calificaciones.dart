@@ -182,7 +182,7 @@ class _CalificacionesState extends State<Calificaciones> {
                         Padding(
                           padding: const EdgeInsets.only(left: 15, right: 15),
                           child: Text(
-                            'Es el promedio que adquieres en base a cada calificación que te otorga el brindador del servicio.',
+                            'Es el promedio que adquieres en base a cada calificación que te otorga el prestador del servicio.',
                             softWrap: true,
                             style: TextStyle(
                               fontSize: 15.5,

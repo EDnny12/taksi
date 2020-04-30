@@ -162,11 +162,11 @@ class _CodigoState extends State<Codigo> {
   }
 
   void onAuthenticationSuccessful() {
-    Provider.of<Usuario>(context).correo = _correo;
-    Provider.of<Usuario>(context).nombre = _nombre;
-    Provider.of<Usuario>(context).foto = _foto;
-    Provider.of<Usuario>(context).inicio = _inicio;
-    Provider.of<Usuario>(context).telefono = '+52' + _telefono;
+    Provider.of<Usuario>(context, listen: false).correo = _correo;
+    Provider.of<Usuario>(context, listen: false).nombre = _nombre;
+    Provider.of<Usuario>(context, listen: false).foto = _foto;
+    Provider.of<Usuario>(context, listen: false).inicio = _inicio;
+    Provider.of<Usuario>(context, listen: false).telefono = '+52' + _telefono;
     Navigator.of(context).pop();
     Navigator.of(context).pop();
   }

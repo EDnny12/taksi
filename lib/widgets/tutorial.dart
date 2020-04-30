@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/painting.dart';
 import 'package:introduction_screen/introduction_screen.dart';
 import 'package:taksi/dialogs/showPhoto.dart';
 import 'package:taksi/login/login.dart';
@@ -93,6 +94,7 @@ class _TutorialState extends State<Tutorial> {
   bodyPanel2() {
     return SingleChildScrollView(
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           Container(
             decoration: BoxDecoration(
@@ -194,6 +196,7 @@ class _TutorialState extends State<Tutorial> {
   bodyPanel3() {
     return SingleChildScrollView(
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           Container(
             decoration: BoxDecoration(
@@ -220,6 +223,7 @@ class _TutorialState extends State<Tutorial> {
             height: 15,
           ),
           Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               InkWell(
                 onTap: () {
@@ -289,6 +293,7 @@ class _TutorialState extends State<Tutorial> {
             height: 10,
           ),
           Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               Container(
                 decoration: BoxDecoration(
@@ -363,6 +368,7 @@ class _TutorialState extends State<Tutorial> {
   bodyPanel4() {
     return SingleChildScrollView(
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           Container(
             decoration: BoxDecoration(
@@ -389,6 +395,7 @@ class _TutorialState extends State<Tutorial> {
             height: 30,
           ),
           Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               Container(
                 decoration: BoxDecoration(
@@ -458,6 +465,7 @@ class _TutorialState extends State<Tutorial> {
             height: 15,
           ),
           Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               InkWell(
                 onTap: () {
@@ -484,7 +492,7 @@ class _TutorialState extends State<Tutorial> {
                     width: MediaQuery.of(context).size.width * 0.50,
                     child: Text(
                       'Confirme su punto de partida, Mueva el mapa hasta posicionar el marcador' +
-                          ' en la calle en la cual tomara el taxi.',
+                          ' en la calle en la cual tomará el taxi.',
                       textAlign: TextAlign.justify,
                       style: TextStyle(
                         fontFamily: 'Spectral',
@@ -532,6 +540,7 @@ class _TutorialState extends State<Tutorial> {
   bodyPanel5() {
     return SingleChildScrollView(
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           Container(
             decoration: BoxDecoration(
@@ -558,6 +567,7 @@ class _TutorialState extends State<Tutorial> {
             height: 30,
           ),
           Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               Container(
                 decoration: BoxDecoration(
@@ -627,6 +637,7 @@ class _TutorialState extends State<Tutorial> {
             height: 15,
           ),
           Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               InkWell(
                 onTap: () {
@@ -676,6 +687,7 @@ class _TutorialState extends State<Tutorial> {
   bodyPanel6(context) {
     return SingleChildScrollView(
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           Container(
             decoration: BoxDecoration(
@@ -702,6 +714,7 @@ class _TutorialState extends State<Tutorial> {
             height: 25,
           ),
           Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               InkWell(
                 onTap: () {
@@ -771,6 +784,7 @@ class _TutorialState extends State<Tutorial> {
             height: 15,
           ),
           Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               Container(
                 decoration: BoxDecoration(
@@ -782,8 +796,8 @@ class _TutorialState extends State<Tutorial> {
                   child: SizedBox(
                     width: MediaQuery.of(context).size.width * 0.50,
                     child: Text(
-                      'Puedes ver el recorrido que realizaras y '
-                      'el tiempo en el que llegaras a tu destino.',
+                      'Puedes ver el recorrido que realizarás y '
+                      'el tiempo en el que llegarás a tu destino.',
                       textAlign: TextAlign.justify,
                       style: TextStyle(
                         fontFamily: 'Spectral',
@@ -821,6 +835,7 @@ class _TutorialState extends State<Tutorial> {
   bodyPanel7() {
     return SingleChildScrollView(
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           Container(
             decoration: BoxDecoration(
@@ -930,7 +945,6 @@ class _TutorialState extends State<Tutorial> {
             showSkipButton: true,
             skipFlex: 0,
             nextFlex: 0,
-
             skip: const Text('Omitir'),
             next: const Icon(Icons.arrow_forward),
             done: const Text('Finalizar',

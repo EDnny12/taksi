@@ -1,14 +1,18 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_auth_buttons/flutter_auth_buttons.dart';
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
 import 'package:taksi/dialogs/dialogError.dart';
 import 'package:taksi/dialogs/loader.dart';
 import 'package:taksi/login/phone_login.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert' as JSON;
+
+import 'package:taksi/providers/configuration.dart';
 
 final GoogleSignIn _googleSignIn = GoogleSignIn();
 Map userProfile;
@@ -22,6 +26,7 @@ class _LogState extends State<Log> {
   @override
   void initState() {
     //currentUser();
+    getLinksConfiguration();
     super.initState();
   }
 
@@ -177,6 +182,24 @@ class _LogState extends State<Log> {
     );
   }
 
+  getLinksConfiguration() {
+    Firestore.instance.collection('configuracion').getDocuments().then((value) {
+      if (value.documents.isNotEmpty) {
+        Provider.of<Configuration>(context, listen: false).link_pagina =
+        value.documents[0]['link_pagina'];
+        Provider.of<Configuration>(context, listen: false).link_playstore =
+        value.documents[0]['link_playstore'];
+        Provider.of<Configuration>(context, listen: false).link_terminos =
+        value.documents[0]['link_terminos'];
+        Provider.of<Configuration>(context, listen: false).link_facebook =
+        value.documents[0]['link_facebook'];
+      } else {
+        getLinksConfiguration();
+      }
+    }).catchError((error) {
+      getLinksConfiguration();
+    });
+  }
   /*Future<void> currentUser() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     _auth.currentUser().then((use) {

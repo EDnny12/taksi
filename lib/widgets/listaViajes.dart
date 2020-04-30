@@ -13,24 +13,33 @@ class MisViajes extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print(Provider.of<Usuario>(context).correo);
+    print(Provider.of<Usuario>(context, listen: true).correo);
     return StreamBuilder<QuerySnapshot>(
       stream: Firestore.instance
           .collection("viajes")
           .orderBy(ordenar, descending: true)
-          .where("usuario", isEqualTo: Provider.of<Usuario>(context).correo)
+          .where("usuario", isEqualTo: Provider.of<Usuario>(context, listen: true).correo)
           .snapshots(),
       builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-        if (snapshot.hasError) return const Text('ERROR AL CARGAR SUS VIAJES');
-        switch (snapshot.connectionState) {
+        if (snapshot.connectionState == ConnectionState.waiting) return new Center(child: new CircularProgressIndicator());
+        if(snapshot.hasError) {
+          return Text('Error al cargar sus viajes');
+        } else if(snapshot.hasData) { //snapshot.hasdata
+          return lista(snapshot.data.documents, context);
+        } else {
+          return const Text('Error al cargar sus viajes');
+        }
+
+        //if (snapshot.hasError) return const Text('ERROR AL CARGAR SUS VIAJES');
+        /*switch (snapshot.connectionState) {
           case ConnectionState.waiting:
             return const Center(
               child: const CircularProgressIndicator(),
             );
 
           default:
-            return lista(snapshot.data.documents, context);
-        }
+
+        }*/
       },
     );
   }
@@ -216,9 +225,6 @@ class MisViajes extends StatelessWidget {
                 Image.asset(
                   "assets/taxiApp.png",
                   scale: 2,
-                  /* color: Theme.of(context).brightness == Brightness.dark
-                ? Colors.white38
-                : Colors.black, */
                 ),
                 const SizedBox(
                   height: 40.0,
@@ -234,20 +240,11 @@ class MisViajes extends StatelessWidget {
                       ' ¿Qué estás esperando?'
                     ],
                     textStyle: TextStyle(fontSize: 20.0, fontFamily: "Agne"),
-                  ) /*Text(
-                    "Aún no has realizado algún viaje",
-                    style: const TextStyle(fontSize: 20.0),
-                    textAlign: TextAlign.center,
-                  )*/
-                      ),
+                  )),
                 ),
                 const SizedBox(
                   height: 18.0,
                 ),
-                /*Text(
-                  "¿Qué estás esperando?",
-                  style: const TextStyle(fontSize: 20.0),
-                ),*/
                 const SizedBox(
                   height: 30.0,
                 ),
@@ -258,7 +255,9 @@ class MisViajes extends StatelessWidget {
                     child: const Text(
                       "Planea tu primer viaje",
                       style: const TextStyle(
-                          fontSize: 18.0, fontWeight: FontWeight.bold, color: Colors.white),
+                          fontSize: 18.0,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white),
                     ),
                     onPressed: () {
                       Navigator.of(context).pop();

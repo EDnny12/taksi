@@ -48,11 +48,11 @@ class DialogCancelacionViaje {
                               Navigator.of(context).pop();
                               Loader().showCargando(context2, 'Cancelando su viaje!');
                               if (tipo == 'usuario') {
-                                Provider.of<AppState>(context2).cancelarViaje(context2);
+                                Provider.of<AppState>(context2, listen: false).cancelarViaje(context2);
                               } else {
-                                Provider.of<AppState>(context2).cancelViaje();
-                                Provider.of<AppState>(context2).deleteRegistroViaje();
-                                Provider.of<AppState>(context2).restablecerVariables(context2, 'cancelado');
+                                Provider.of<AppState>(context2, listen: false).cancelViaje();
+                                Provider.of<AppState>(context2, listen: false).deleteRegistroViaje();
+                                Provider.of<AppState>(context2, listen: false).restablecerVariables(context2, 'cancelado');
                               }
                             },
                             label: Text('Aceptar',
@@ -72,7 +72,7 @@ class DialogCancelacionViaje {
           );
         },
         transitionDuration: Duration(milliseconds: 200),
-        barrierDismissible: tipo == 'chofer' ? false : true,
+        barrierDismissible: tipo == 'usuario' ? true : false,
         barrierLabel: '',
         context: context2,
         pageBuilder: (context, animation1, animation2) {});

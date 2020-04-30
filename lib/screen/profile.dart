@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:taksi/providers/usuario.dart';
 
@@ -13,6 +14,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       body: NestedScrollView(
         headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
@@ -30,7 +32,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                       fontSize: 20.0,
                     )),
                 background: Image.network(
-                  Provider.of<Usuario>(context).foto,
+                  Provider.of<Usuario>(context, listen: true).foto,
                   fit: BoxFit.cover,
                 ),
               ),
@@ -61,14 +63,14 @@ class _UserProfilePageState extends State<UserProfilePage> {
     );
 
     return Text(
-      Provider.of<Usuario>(context).nombre,
+      Provider.of<Usuario>(context, listen: true).nombre,
       style: _nameTextStyle,
       textAlign: TextAlign.center,
     );
   }
 
   Widget _buildStatus(BuildContext context) {
-    if (Provider.of<Usuario>(context).inicio == 'facebook') {
+    if (Provider.of<Usuario>(context, listen: true).inicio == 'facebook') {
       _status = 'Inició sesión con Facebook';
     } else {
       _status = 'Inició sesión con Google';
@@ -93,10 +95,12 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
   Widget _buildGetInTouch(BuildContext context) {
     String califi;
-    if (Provider.of<Usuario>(context).calificacion.isEmpty) {
+    if (Provider.of<Usuario>(context, listen: true).calificacion == null) {
+      califi = 'Error al obtener su calificación';
+    } else if (Provider.of<Usuario>(context, listen: true).calificacion.isEmpty) {
       califi = 'Aun no tienes calificación';
     } else {
-      califi = Provider.of<Usuario>(context).calificacion;
+      califi = Provider.of<Usuario>(context, listen: true).calificacion;
     }
 
     return Padding(
@@ -114,12 +118,18 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 ListTile(
                   title: Text("Correo Electrónico"),
                   leading: Icon(Icons.email, color: Colors.lightBlue,),
-                  subtitle: Text(Provider.of<Usuario>(context).correo),
+                  subtitle: Text(Provider.of<Usuario>(context, listen: true).correo),
                 ),
                 ListTile(
-                  title: Text("Teléfono"),
+                  title: Row(
+                    children: <Widget>[
+                      Text("Teléfono"),
+                      SizedBox(width: 5,),
+                      Icon(FontAwesomeIcons.checkCircle, color: Colors.lightBlue,size: 15.0,),
+                    ],
+                  ),
                   leading: Icon(Icons.phone, color: Colors.lightBlue,),
-                  subtitle: Text(Provider.of<Usuario>(context).telefono),
+                  subtitle: Text(Provider.of<Usuario>(context, listen: true).telefono),
                 ),
                 ListTile(
                   title: Text("Calificación"),
@@ -142,166 +152,3 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
 }
 
-/*
-class UserProfilePage extends StatelessWidget {
-  var context;
-  UserProfilePage(this.context);
-  String _status = '';
-
-  Widget _buildCoverImage(Size screenSize) {
-    return Container(
-      height: screenSize.height / 2.6, //2.6
-      decoration: BoxDecoration(
-        image: DecorationImage(
-          image: Provider.of<Usuario>(context).foto != null
-              ? NetworkImage(Provider.of<Usuario>(context).foto)
-              : AssetImage('assets/person.png'),
-          fit: BoxFit.cover,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildProfileImage() {
-    return Center(
-      child: Container(
-        width: 140.0,
-        height: 140.0,
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: Provider.of<Usuario>(context).foto != null
-                ? NetworkImage(Provider.of<Usuario>(context).foto)
-                : AssetImage('assets/person.png'),
-            fit: BoxFit.cover,
-          ),
-          borderRadius: BorderRadius.circular(80.0),
-          border: Border.all(
-            color: Colors.white,
-            width: 10.0,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFullName() {
-    TextStyle _nameTextStyle = TextStyle(
-      fontFamily: 'Roboto',
-      color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black,
-      fontSize: 28.0,
-      fontWeight: FontWeight.w700,
-    );
-
-    return Text(
-      Provider.of<Usuario>(context).nombre,
-      style: _nameTextStyle,
-      textAlign: TextAlign.center,
-    );
-  }
-
-  Widget _buildStatus(BuildContext context) {
-    if (Provider.of<Usuario>(context).inicio == 'facebook') {
-      _status = 'Inició sesión con Facebook';
-    } else {
-      _status = 'Inició sesión con Google';
-    }
-    return Container(
-      padding: EdgeInsets.symmetric(vertical: 4.0, horizontal: 6.0),
-      decoration: BoxDecoration(
-        color: Theme.of(context).scaffoldBackgroundColor,
-        borderRadius: BorderRadius.circular(4.0),
-      ),
-      child: Text(
-        _status,
-        style: TextStyle(
-          fontFamily: 'Spectral',
-          color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black,
-          fontSize: 20.0,
-          fontWeight: FontWeight.w300,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGetInTouch(BuildContext context) {
-    String califi;
-    if (Provider.of<Usuario>(context).calificacion.isEmpty) {
-      califi = 'Aun no tienes calificación';
-    } else {
-      califi = Provider.of<Usuario>(context).calificacion;
-    }
-
-    return Padding(
-      padding: const EdgeInsets.all(12.0),
-      child: Card(
-        child: Padding(
-          padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.1),
-          child: Container(
-            height: 200,
-            child: ListView(
-              children: <Widget>[
-                SizedBox(
-                  height: 0,
-                ),
-                ListTile(
-                  title: Text("Correo Electrónico"),
-                  leading: Icon(Icons.email, color: Colors.lightBlue,),
-                  subtitle: Text(Provider.of<Usuario>(context).correo),
-                ),
-                ListTile(
-                  title: Text("Teléfono"),
-                  leading: Icon(Icons.phone, color: Colors.lightBlue,),
-                  subtitle: Text(Provider.of<Usuario>(context).telefono),
-                ),
-                ListTile(
-                  title: Text("Calificación"),
-                  leading: Icon(
-                    Icons.star,
-                    color: Colors.yellow,
-                  ),
-                  subtitle: Text(califi),
-                ),
-              ],
-            ),
-          ),
-        ),
-        elevation: 10.0,
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    Size screenSize = MediaQuery.of(context).size;
-    return Scaffold(
-      body: Stack(
-        children: <Widget>[
-          _buildCoverImage(screenSize),
-          SafeArea(
-            child: SingleChildScrollView(
-              child: Column(
-                children: <Widget>[
-                  SizedBox(
-                    height: screenSize.height / 6.4
-                    ),
-                  _buildProfileImage(),
-                  SizedBox(
-                    height: 15,
-                  ),
-                  _buildFullName(),
-                  _buildStatus(context),
-                  SizedBox(height: 10.0),
-                  _buildGetInTouch(context),
-                  SizedBox(height: 8.0),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-*/

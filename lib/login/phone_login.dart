@@ -9,6 +9,7 @@ import 'package:taksi/dialogs/dialogError.dart';
 import 'package:taksi/dialogs/loader.dart';
 import 'package:taksi/login/ingresarCodigo.dart';
 import 'package:taksi/login/login.dart';
+import 'package:taksi/providers/configuration.dart';
 import 'package:taksi/providers/estilos.dart';
 import 'package:taksi/providers/usuario.dart';
 import 'package:toast/toast.dart';
@@ -41,12 +42,12 @@ class PhoneSignInSectionState extends State<PhoneSignInSection> {
     _terminosyCondiciones = TapGestureRecognizer()
       ..onTap = () {
         print('terminos y condiciones');
-        showWebView('https://pub.dev/packages/easy_web_view#-readme-tab-');
+        showWebView(Provider.of<Configuration>(context, listen: false).link_terminos);
       };
     _politicasDePrivacidad = TapGestureRecognizer()
       ..onTap = () {
         print('politicas de privacidad');
-        showWebView('https://pub.dev/packages?q=web+view');
+        showWebView(Provider.of<Configuration>(context, listen: false).link_terminos);
       };
   }
 
@@ -84,10 +85,18 @@ class PhoneSignInSectionState extends State<PhoneSignInSection> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        SizedBox(height: 40,),
+                        SizedBox(
+                          height: 40,
+                        ),
                         Text(
                           'Nombre',
-                          style: TextStyle(fontSize: 17, color: Colors.black54),
+                          style: TextStyle(
+                            fontSize: 17,
+                            color:
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.white70
+                                    : Colors.black54,
+                          ), //black54
                           textAlign: TextAlign.justify,
                         ),
                         Text(
@@ -95,10 +104,17 @@ class PhoneSignInSectionState extends State<PhoneSignInSection> {
                           style: TextStyle(fontSize: 19),
                           textAlign: TextAlign.justify,
                         ),
-                        SizedBox(height: 40,),
+                        SizedBox(
+                          height: 40,
+                        ),
                         Text(
                           'Correo',
-                          style: TextStyle(fontSize: 17, color: Colors.black54),
+                          style: TextStyle(
+                              fontSize: 17,
+                              color: Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? Colors.white70
+                                  : Colors.black54),
                           textAlign: TextAlign.justify,
                         ),
                         Text(
@@ -106,13 +122,19 @@ class PhoneSignInSectionState extends State<PhoneSignInSection> {
                           style: TextStyle(fontSize: 19),
                           textAlign: TextAlign.justify,
                         ),
-                        SizedBox(height: 40,),
+                        SizedBox(
+                          height: 40,
+                        ),
                         Container(
-                          child: const Text(
+                          child: Text(
                             'Ingrese su número de teléfono y recibirá un '
                             'código de verificación',
-                            style:
-                                TextStyle(fontSize: 17, color: Colors.black54),
+                            style: TextStyle(
+                                fontSize: 17,
+                                color: Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? Colors.white70
+                                    : Colors.black54),
                             textAlign: TextAlign.justify,
                           ),
                           alignment: Alignment.center,
@@ -156,7 +178,9 @@ class PhoneSignInSectionState extends State<PhoneSignInSection> {
                             child: const Text('Continuar'),
                           ),
                         ),
-                        SizedBox(height: 20,),
+                        SizedBox(
+                          height: 20,
+                        ),
                         RichText(
                             textAlign: TextAlign.justify,
                             text: TextSpan(children: <TextSpan>[
@@ -164,7 +188,11 @@ class PhoneSignInSectionState extends State<PhoneSignInSection> {
                                   text:
                                       'Al presionar continuar, confirmo que leí y estoy de acuerdo con ',
                                   style: TextStyle(
-                                      fontSize: 15, color: Colors.black)),
+                                      fontSize: 15,
+                                      color: Theme.of(context).brightness ==
+                                              Brightness.dark
+                                          ? Colors.white70
+                                          : Colors.black54)),
                               TextSpan(
                                   text: 'los términos y condiciones',
                                   recognizer: _terminosyCondiciones,
@@ -175,7 +203,11 @@ class PhoneSignInSectionState extends State<PhoneSignInSection> {
                               TextSpan(
                                   text: ' y ',
                                   style: TextStyle(
-                                      fontSize: 15, color: Colors.black)),
+                                      fontSize: 15,
+                                      color: Theme.of(context).brightness ==
+                                              Brightness.dark
+                                          ? Colors.white70
+                                          : Colors.black54)),
                               TextSpan(
                                   text: 'políticas de privacidad',
                                   recognizer: _politicasDePrivacidad,
@@ -186,7 +218,11 @@ class PhoneSignInSectionState extends State<PhoneSignInSection> {
                               TextSpan(
                                   text: ' por el uso del servicio.',
                                   style: TextStyle(
-                                      fontSize: 15, color: Colors.black)),
+                                      fontSize: 15,
+                                      color: Theme.of(context).brightness ==
+                                              Brightness.dark
+                                          ? Colors.white70
+                                          : Colors.black54)),
                             ])),
                         Container(
                           alignment: Alignment.center,
@@ -358,11 +394,11 @@ class PhoneSignInSectionState extends State<PhoneSignInSection> {
 */
 
   void onAuthenticationSuccessful() {
-    Provider.of<Usuario>(context).correo = correo;
-    Provider.of<Usuario>(context).nombre = nombre;
-    Provider.of<Usuario>(context).foto = foto;
-    Provider.of<Usuario>(context).inicio = inicio;
-    Provider.of<Usuario>(context).telefono =
+    Provider.of<Usuario>(context, listen: false).correo = correo;
+    Provider.of<Usuario>(context, listen: false).nombre = nombre;
+    Provider.of<Usuario>(context, listen: false).foto = foto;
+    Provider.of<Usuario>(context, listen: false).inicio = inicio;
+    Provider.of<Usuario>(context, listen: false).telefono =
         '+52' + _phoneNumberController.text;
     Navigator.of(context).pop();
     Navigator.of(context).pop();

@@ -77,10 +77,10 @@ class DialogSolicitar {
 
   void insertSolicitud(context) async {
     await Firestore.instance.collection("solicitudes").document().setData({
-      'usuario': Provider.of<Usuario>(context).nombre,
+      'usuario': Provider.of<Usuario>(context, listen: false).nombre,
       'ciudad': ciudadUsuario,
       'fecha': DateTime.now(),
-      'estado': Provider.of<Usuario>(context).estado,
+      'estado': Provider.of<Usuario>(context, listen: false).estado,
     }).whenComplete(() {
       Navigator.of(context).pop();
       showSnackBar('Tu solicitud ha sido enviada!');
